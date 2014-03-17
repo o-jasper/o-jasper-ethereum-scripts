@@ -1,0 +1,22 @@
+if tx.value < block.basefee * STARTFEE:
+    stop
+    if tx.datan == 0 or tx.sender != VIEWER :
+        stop
+from_block = tx.data[1] #Must be in attempt range
+to_block   = tx.data[1] + ATTEMPT_CNT
+if block.number < from_block or block.number > to_block :
+    stop
+# Messages here are actually sent by server, punish command is also requesting
+#  command for viewer.
+command = tx.data[0]
+if command == CMD_PUNISH :
+    if 2*tx.value > tx.data[3] :
+        stop
+    mktx(DESTRUCTION_ADDR,2*tx.value, 0,[])
+    stop
+#Note, the server predicts if it loses and doesnt bother, of course.
+if command == CMD_REDEEM :
+    if block.parenthash < DIFFICULTY : 
+        stop
+    mktx(tx.data[2], tx.data[3], 0,[])
+    stop
