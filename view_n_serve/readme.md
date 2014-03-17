@@ -27,14 +27,16 @@ Within the block number range, `from_block` to `from_block + attempt_cnt`:
 * have a *chance* of getting a reward using the signed reward message.
   `(REDEEM request_signature view_checksum from_block)`
 
-# Attacks:
+## Attacks:
 * Not give out reward message &rightarrow; solved with punishment.
 * Draining the script before other servers can get to it by 
   'playing both viewer and server' &rightarrow; **TODO:** minimum ether store.
 
-# TODO
+## TODO
 * Most importantly, probably ethereum has some sort of anti-replay mechanism. So
   the current setup would not work in that case.
+* Figure out the effects of miner collusion in the use of `block.prevhash`
+  as psuedorandom.
 * If it lives, you'd need software to actually do the server-ing and requesting.
   That includes the signatured messages and the servers checking that the
   scripts are alive and contain coin.
@@ -49,7 +51,7 @@ Within the block number range, `from_block` to `from_block + attempt_cnt`:
 * Think about 'stock' aspect, can you make a subcurrency somehow and give the
   creators a premine?
 
-# Additional (potential)features
+## Additional (potential)features
 Maybe just allow a single block for potential payout. 
 
 Could simply specify a single block, but that assumes you can always get into
