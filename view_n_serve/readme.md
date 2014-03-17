@@ -8,16 +8,16 @@ reward system could be complentary for paying for storage data not often
 accessed.(afaict the dropbox doesnt actually reward serving it to anyone.
 
 **Viewers:**
-* set up the script with some coin in it.
+
+* set up the script.
+* Put ether in it. (anyone can put ether in it)
 
 That is *all* they do on the blockchain! Rest is talking to the servers.
 
 * ask for serving something with a signed request message.
 * give *potential* with the reward message afterwards.
 
-Finally, anyone can top up the ammount of ether.(just send ether)
-
-Viewers can only drain it by faking a redeem messages. It is not intended to be
+Viewers can only drain it by faking redeem messages. It is not intended to be
 emptied afterwards.
 
 **Servers:**
@@ -27,6 +27,9 @@ Within the block number range, `from_block` to `from_block + attempt_cnt`:
   `(PUNISH request_signature view_checksum from_block)`
 * have a *chance* of getting a reward using the signed reward message.
   `(REDEEM request_signature view_checksum from_block)`
+
+Servers would have to look at the script used and if there is enough ether in 
+it. They may also keep a blacklist.
 
 Currently it is pretended that viewers give ready-to-go transactions during
 requesting and accepting. This might not be possible, we'd need to have a 
@@ -38,23 +41,30 @@ viewer-signed statement that the script then has to check.
   'playing both viewer and server' &rightarrow; **TODO:** minimum ether store.
 
 ## TODO
-* Most importantly, probably ethereum has some sort of anti-replay mechanism. So
+* Most importantly, probably ethereum has some sort of 
+  anti-[replay](https://en.wikipedia.org/wiki/Replay_attack) mechanism. So
   the current setup would not work in that case.
+
 * Figure out the effects of miner collusion in the use of `block.prevhash`
   as psuedorandom.
+
+* Minimum ether balance, that *never* extracts. This punishes viewers
+  because they'd need ether to make a new contract if servers blacklist it.
+
+* Suppose it would need some suggestions for parameters. For instance 
+  `punish_max == 2*redeem_reward` or something.
+
+* Application to other things?
+
+* Prefer if the servers only got one shot, based on a single `.parenthash`, but
+  were still able to use a whole range of blocks to actually collect it.
+
+* What does it look like if it were implemented on the server side instead?
+  (dont expect it is better)
+
 * If it lives, you'd need software to actually do the server-ing and requesting.
   That includes the signatured messages and the servers checking that the
   scripts are alive and contain coin.
-* Do math? Are viewers draining the scripts right before a problem?
-  (do not think so)
-* Suppose it would need some suggestions for parameters. For instance 
-  `punish_max == 2*redeem_reward` or something.
-* Application to other things?
-* Minimum ether storage, that doesnt extract. Basically it is a stake so that
-  the contract owner loses something if servers were to blacklist the particular
-  viewer.
-* Think about 'stock' aspect, can you make a subcurrency somehow and give the
-  creators a premine?
 
 ## Additional (potential)features
 Maybe just allow a single block for potential payout. 
@@ -72,5 +82,5 @@ Seem bad:
 * User getting the money out; people should already know that sending money is
   by default final, and they can use other mechanisms to make it more secure.
 
-* Trying to avoid users faking signatures to drain it: No known Sigil-proof way
-  of doing it. Probably cant be done.
+* Trying to avoid users faking signatures to drain it: Dont see how to do it,
+  could try having whitelists in the contract i suppose.
