@@ -1,4 +1,5 @@
-it is PSUEDOCODE
+**TODO** remove this once the simple modifications are in cll-sim.
+They are adding `block.number` and `block.parenthash`.
 
 # Viewing and serving
 Servers store data but need to be reimbursed for network use and storage. 
