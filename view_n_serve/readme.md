@@ -14,7 +14,8 @@ That is *all* they do on the blockchain! Rest is talking to the servers.
 
 * ask for serving something with a signed request message.
 * give *potential* with the reward message afterwards.
-Finally, they can top up the ammount of coin.(just send coin)
+
+Finally, anyone can top up the ammount of ether.(just send ether)
 
 Viewers can only drain it by faking a redeem messages. It is not intended to be
 emptied afterwards.
@@ -26,6 +27,10 @@ Within the block number range, `from_block` to `from_block + attempt_cnt`:
   `(PUNISH request_signature view_checksum from_block)`
 * have a *chance* of getting a reward using the signed reward message.
   `(REDEEM request_signature view_checksum from_block)`
+
+Currently it is pretended that viewers give ready-to-go transactions during
+requesting and accepting. This might not be possible, we'd need to have a 
+viewer-signed statement that the script then has to check.
 
 ## Attacks:
 * Not give out reward message &rightarrow; solved with punishment.
