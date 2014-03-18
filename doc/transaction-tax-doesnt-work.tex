@@ -1,0 +1,38 @@
+TODO convert to .tex proper?
+
+@LukeBurgess I am not at all familiar with the problem. What makes you think
+ that situation would last given a 10M$/year potential income?
+
+Afaik the best we can do is  T(a)+T(b) = T(a+b), linear, i mean sub-linear only
+ gives incentive to split up transactions. The tax is T(a)=max(anti_dust_spam, c*a)
+ then. For our purposes we ignore the anti dust spam/transaction term.
+
+Let P=Sum{k}T[k] be the total tax income rate da(t)/dt= PG(a[j])/Sum{k}G(a[k]) If
+you dont want to promote splitting accounts either G(a+b)>= G(a)+G(b), and we'd quickly
+ realize that is best off linear too, and we got nowhere; everything would be redistributed
+ the exact way it was. I think i actually got it wrong having the fraction of tax
+ aquired be simply a function of the amount. The whole idea was to have tax/transaction
+ costs to be part of the rate you aquire at. The idea is that small people have to
+ move around their money between each other, and big organizations dont.
+
+da(t,a,T)/dt = PQG(a,T)-T where T is the transacting rate and 
+Q=1/Sum{k}G(a[k],T[k]) assumed constant. For big parties to not do better, 
+we need da(t,c,T)/dt>=da(t,a,q)/dt + da(t,c-a,T-q)/dt from which..
+
+..follows G(c,T)>=G(a,q)+G(c-a,T-q) (for any 0<=q<=ta+tb), again for trickle down,
+equality is the best we can do is equality.
+
+But then G(c,T)=Constant{a,q}=G(a,q)+G(c-a,T-q) the constancy implies 
+0=dG(c,T)/da= d1G(a,q)-d1G(c-a,T-q) => d1G(a,q)=d1G(c-a,T-q) but c-a and T-q can be
+ chosen to be anything, so d1G(a,q) is contant over both a,q. By the same process 
+d2G(a,q) is contant over both.
+
+So then we must have G(a,T) = C + Da + ET there is only the constant left to save
+ it. G(c,T)=G(a,q)+G(c-a,T-q) for T=0,q=0 implies linearity for T=0, so 
+C=0; G(a,T) = Da + ET. But remember, the cost of transacting was linear. Either 
+D>0 and transacting pays to the rich, who dont transact, or D=0 and the this system
+ in-effect does nothing, as the taxes is brought back to exactly the people it came
+ from..
+
+Barring i am wrong the tax doesnt work. Perhaps only if it goes to a party of which
+ the trust is somehow established otherwise.
