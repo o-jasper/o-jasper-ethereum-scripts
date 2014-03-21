@@ -1,0 +1,22 @@
+
+BASE_FEES=400 //TODO the number.
+
+if tx.value < block.basefee*BASE_FEES 
+   stop
+
+last_payout         = contract.storage[0]
+contract.storage[0] = block.number
+
+duration = block.number - last_payout
+
+mktx(RECEIVER_ADDRESS, PAYOUT*duration) //TODO other arguments oblig?
+
+if !(tx.sender == USER_ADDRESS) :
+   stop
+
+//Extract funds.
+if tx.data[0] == 4 :
+   mktx(tx.sender, tx.data[1]) //*
+   stop
+
+//To end the script, simply extract everything and let it die.

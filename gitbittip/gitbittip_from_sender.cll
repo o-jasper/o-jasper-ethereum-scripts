@@ -1,0 +1,44 @@
+
+BASE_FEES=400 //TODO the number.
+
+if tx.value < block.basefee*BASE_FEES 
+   stop
+
+last_payout         = contract.storage[0]
+contract.storage[0] = block.number
+
+duration = block.number - last_payout
+payout = contract.storage[2]
+
+i=3
+recipient_cnt = contract.storage[1]
+while i < 3 + recipient_cnt :
+   mktx(contract.storage[i], payout*duration) //TODO other arguments oblig?
+   i = i + 1
+
+if !(tx.sender == USER_ADDRESS) :
+   stop
+
+//Change payout.
+if tx.data[0] == 1 :
+   contract.storage[2] = tx.data[1]
+   stop
+
+//Add address donated too.
+if tx.data[0] == 2 :
+   contract.storage[recipient_cnt+3] = tx.data[2]
+   contract.storage[1] = recipient_cnt + 1
+   stop
+
+//Remove address donated to.
+if tx.data[0] == 3 :
+   contract.storage[tx.data[1]] = contract.storage[recipient_cnt+3]
+   contract.storage[1] = recipient_cnt - 1
+   stop
+
+//Extract funds.
+if tx.data[0] == 4 :
+   mktx(tx.sender, tx.data[1])
+   stop
+
+//To end the script, simply extract everything and let it die.
