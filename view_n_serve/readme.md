@@ -1,5 +1,6 @@
-**TODO** remove this once the simple modifications are in cll-sim.
-They are adding `block.number` and `block.parenthash`.
+**Note** The 'rich server' attack is a problem.. For instance if content is
+considered 'wrong' someone rich might simply pretend to serve it and then use
+the punishment scheme. The cost on his side may just be part of the course.
 
 # Viewing and serving
 Servers store data but need to be reimbursed for network use and storage. 
@@ -36,9 +37,14 @@ requesting and accepting. This might not be possible, we'd need to have a
 viewer-signed statement that the script then has to check.
 
 ## Attacks:
+* Rich attacker playing server, aiming at particular viewers? 
 * Not give out reward message &rightarrow; solved with punishment.
 * Draining the script before other servers can get to it by 
   'playing both viewer and server' &rightarrow; **TODO:** minimum ether store.
+  
+  Note: different servers would have to communicate about contracts being used
+  so any particular contract cant be overused to make the minimum ether store
+  a small portion.
 
 ## TODO
 * Most importantly, probably ethereum has some sort of 
