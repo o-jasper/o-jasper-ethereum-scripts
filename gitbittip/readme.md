@@ -2,7 +2,7 @@
 Idea inspired on [gittip](http://gittip.com/) due to Chad Whitacre.
 
 ## GitBitTip script on sender side
-`gitbitip_from_sender_1.es`is a perspective from the sender. Before anything
+`gitbitip_from_sender_1.cll`is a perspective from the sender. Before anything
 is changed with the script, the pledged time&times;payout is *always* sent.
 There is no way around it.
 (But receivers may want to poke so they dont have to wait)
@@ -13,7 +13,7 @@ including other scripts.
 The owner of the script can extract coin and change the list, but only after the
 pledged is sent.
 
-The other one, `gitbitip_from_sender.es` uses `3+recipient_cnt` data entries, is
+The other one, `gitbitip_from_sender.cll` uses `3+recipient_cnt` data entries, is
 more complicated, requires all receivers to get the same ammounts.
 
 ## (non)Issues:
@@ -44,5 +44,6 @@ different concept. It is interesting in that single donors cant back off, only
 the judges can return the ether.
 
 ## TODO: 
-* Test the darned things.
+* Use `contract.storage` elements to 
+* Test the darned thing.
 * Need proper fee value.

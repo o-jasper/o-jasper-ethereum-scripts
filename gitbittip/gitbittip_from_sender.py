@@ -20,7 +20,7 @@ class GitBitTip(Contract):
         if tx.value < block.basefee*BASE_FEES:
             stop
 
-        duration = block.timestamp - contact.storage[I_LAST_PAYOUT]
+        duration = block.timestamp - contract.storage[I_LAST_PAYOUT]
         contract.storage[I_LAST_PAYOUT] = block.timestamp
 
         i = I_FIRST_RECIPIENT # First listed first served.
@@ -165,8 +165,8 @@ class GitBitTipRun(Simulation):
     def test_sequence(self, n=100):
         contract = GitBitTip()
         state    = GitBitTipState()
-        time=0
-        i=0
+        time = 0
+        i = 0
         while i < n:
             time += random()
             i += 1

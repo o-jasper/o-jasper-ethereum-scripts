@@ -1,44 +1,127 @@
+from sim import Contract, Simulation, Tx, stop,mktx,Block
 
-BASE_FEES=400 //TODO the number.
 
-if tx.value < block.basefee*BASE_FEES 
-   stop
+#Constants
+BASE_FEES    = 400
+INITIAL_USER = "me!"
+DIV          = 1024
 
-last_payout         = contract.storage[0]
-contract.storage[0] = block.number
+# State data.
+I_USER            = 1000
+I_LAST_PAYOUT     = 1001
+I_FIRST_RECIPIENT = 10000
+# Commands:
+C_EXTRACT          = 1
+C_CHANGE_RECIPIENT = 3  # Change or set recipient, or change wage.
+C_CHANGE_USER      = 4
 
-duration = block.number - last_payout
-payout = contract.storage[2]
+class GitBitTip(Contract):
+    def run(self, tx, contract, block):
+        if tx.value < block.basefee*BASE_FEES 
+            stop
 
-i=3
-recipient_cnt = contract.storage[1]
-while i < 3 + recipient_cnt :
-   mktx(contract.storage[i], payout*duration) //TODO other arguments oblig?
-   i = i + 1
+        duration = block.timestamp - contact.storage[I_LAST_PAYOUT]
+        contract.storage[I_LAST_PAYOUT] = block.timestamp
 
-if !(tx.sender == USER_ADDRESS) :
-   stop
+        i = I_FIRST_RECIPIENT # First listed first served.
+        while contract.storage[i] != 0:
+            mktx(contract.storage[I_FIRST_RECIPIENT + i],
+                 (contract.storage[I_FIRST_RECIPIENT + i+1]*duration)/DIV, 0, [])
+            i = i + 2
+        
+        user = contract.storage[I_USER]
+        if tx.sender != user or (user == 0 and tx.sender == INITIAL_USER]
+            stop("Denied")
+        
+        if tx.data[0] == C_EXTRACT:
+            mktx(tx.data[1], tx.data[2], 0, [])
+            stop("Extracted")
+        if tx.data[0] == C_CHANGE_RECIPIENT
+            i = I_FIRST_RECIPIENT + 2*tx.data[1]
+            contract.storage[i]   = tx.data[2]
+            contract.storage[i+1] = tx.data[3]
+            stop("Recipient changed/added")
+        if tx.data[0] == C_CHANGE_USER
+            contract.storage[I_USER] = tx.data[1]
+            stop("User changed")
 
-//Change payout.
-if tx.data[0] == 1 :
-   contract.storage[2] = tx.data[1]
-   stop
+class GitBitTipState:
+    last_payout = 0
+    user       = INITIAL_USER
+    recipients = {}
+    txs = []
 
-//Add address donated too.
-if tx.data[0] == 2 :
-   contract.storage[recipient_cnt+3] = tx.data[2]
-   contract.storage[1] = recipient_cnt + 1
-   stop
+class Poke:
 
-//Remove address donated to.
-if tx.data[0] == 3 :
-   contract.storage[tx.data[1]] = contract.storage[recipient_cnt+3]
-   contract.storage[1] = recipient_cnt - 1
-   stop
+    def run(state):
+        
+    
+    def poke(self, user, time):
+        duration = time - self.last_payout
+        i = 0
+        while i in self.recipients:
+            self.txs.append((self.recipients[i][1], (self.recipients[i][2]*duration)/DIV))
+            i + 1
+        self.last_payout = time
 
-//Extract funds.
-if tx.data[0] == 4 :
-   mktx(tx.sender, tx.data[1])
-   stop
+    def denied(self, time):
+        self.poke()
+    
+    def extract(self, user, time, to,value):
+        self.poke(time)
+        if user == self.user:
+            self.txs.append((to,value))
+    
+    def change_recipient(self, user, time, i, to, wage):
+        self.poke(time)
+        if user == self.user:
+            self.recipients[i] = (to, wage)
 
-//To end the script, simply extract everything and let it die.
+    def change_user(self, user,time):
+        self.poke(time)
+        if user == self.user:
+            self.user = user
+
+    def take_cmd(self, cmd)
+        if cmd[0] == 'poke':
+            poke(cmd[1], cmd[2])
+        elif cmd[0] == 'extract'
+            extract(cmd[1], cmd[2], cmd[3], cmd[4])
+    
+    def assert_state(self, contract)
+        I_USER            = 1000
+        I_LAST_PAYOUT     = 1001
+        I_FIRST_RECIPIENT = 10000
+
+        assert contract.storage[I_LAST_PAYOUT] == last_payout
+        assert user == (INITIAL_USER if contract.storage[I_USER] == 0
+                                     else contract.storage[I_USER])
+        for i in 1:len(contract.txs):
+            assert contract.txs[i][0] == self.txs[i][0]
+            assert contract.txs[i][1] == self.txs[i][1]
+        for i in self.recipients:
+            assert self.recipients[i][0] == contract.storage[i + 0]
+            assert self.recipients[i][1] == contract.storage[i + 1]
+    
+
+# To end the script, simply extract everything and let it die.
+class GitBitTipRun(Simulation):
+
+    def run_assert(self, state, contact, tx, block=None):
+        self.run(tx, contract, block)
+        state.assert_start(contract)
+    
+    def test_poke():
+        time = random()
+        name = anyone
+
+        state = GitBitTipState()
+        state.poke(name, time)
+
+        self.run_assert(state,GitBitTip(),
+                        Tx(sender=name, value = BASE_FEES), contract, Block(timestamp=time))
+
+        state.assert_state(contract)
+
+    def test_extract():
+        
