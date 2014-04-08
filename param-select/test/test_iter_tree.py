@@ -9,8 +9,7 @@ sys.path.append(py_path)
 from iter_tree import IterTree
 
 class SpecificTest():
-    """Tests specific input.
-    """
+    """Tests specific input."""
     it = IterTree([1, 2, [[3, 4, 5], [6, 7, 8]], 9, 10])
 
     def only(self, result, n=100):
@@ -22,5 +21,6 @@ class SpecificTest():
         assert self.it.next_choice(i) == [3,6][i]
         assert self.only([4,7][i]) and self.only([5,8][i])
         assert self.only(9) and self.only(10)
+        assert self.only(None)
 
 SpecificTest().run()
