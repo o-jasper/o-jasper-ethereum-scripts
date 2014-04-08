@@ -71,7 +71,7 @@ def maybe_data() :
     else :
         return []
 
-class ViewNServe(Simulation):
+class ViewNServeRun(Simulation):
 
     contract = ViewNServe()
     

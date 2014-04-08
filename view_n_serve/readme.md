@@ -2,6 +2,8 @@
 considered 'wrong' someone rich might simply pretend to serve it and then use
 the punishment scheme. The cost on his side may just be part of the course.
 
+Attack nr. 2 is big problem too..
+
 # Viewing and serving
 Servers store data but need to be reimbursed for network use and storage. 
 This (on average)pays them for serving data. Note that Vitalics 'dropbox' 
@@ -37,14 +39,26 @@ requesting and accepting. This might not be possible, we'd need to have a
 viewer-signed statement that the script then has to check.
 
 ## Attacks:
-* Rich attacker playing server, aiming at particular viewers? 
-* Not give out reward message &rightarrow; solved with punishment.
-* Draining the script before other servers can get to it by 
-  'playing both viewer and server' &rightarrow; **TODO:** minimum ether store.
+
+
+1. Draining the script before other servers can get to it by 
+   'playing both viewer and server' &rightarrow; **TODO:** minimum ether store.
+   
+   Note: different servers would have to communicate about contracts being used
+   so any particular contract cant be overused to make the minimum ether store
+   a small portion.
+
+2. I cannot believe i missed it, it inherently doesnt solve double spending.
+   You can just share use with so many that it drains quickly and then servers
+   dont get their ethers, saving ether on the side of the users.
   
-  Note: different servers would have to communicate about contracts being used
-  so any particular contract cant be overused to make the minimum ether store
-  a small portion.
+   Servers can try fight it by looking at ip adresses and talking to each other,
+   to see if contracts arent being overused. But that creates new problems and
+   doesnt work.
+  
+3. Rich attacker playing server, aiming at particular viewers? 
+
+4. Not give out reward message &rightarrow; solved with punishment.
 
 ## TODO
 * Most importantly, probably ethereum has some sort of 
