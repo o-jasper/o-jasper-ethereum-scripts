@@ -19,7 +19,7 @@ class Param:
    # *   0:    pass through, human oversight not necessary.
    # *   1:    ok, but human should look at it.
    # *   2:    human should really look at it and make decision.
-   # * >=1024: invalid input/bug/trust issue.
+   # * >=1024: bug/trust issue.
     def classify(self, value):
         return 0 if self.okey() else 1024
 
