@@ -50,7 +50,7 @@ def test_step(ps):
             at = at[:-2]
             at[-1] += 1
             got = ps.get_at(at)
-            if got is None:
+            if got is None or len(got) == 0:
                 assert_str(ps.cur, None, "E DO None")
             else:
                 assert_str(ps.cur, got[0], "E DO")
