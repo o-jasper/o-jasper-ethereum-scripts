@@ -43,9 +43,10 @@ class ParamNumberSep(ParamNumber):  # Single value, multiple cases.
 
 class ParamInt(Param):
 
-    def __init__(self, name, threshhold=0, default=0):
+    def __init__(self, name, default=0):
         self.name       = name
         self.default    = default
+        assert self.okey(self.default)
 
     @property
     def text(self):
@@ -59,12 +60,16 @@ class ParamInt(Param):
 
 class ParamIntSep(ParamInt):
 
+    def __init__(self, name, default=0, max=None):
+        self.name    = name
+        self.default = default
+        self.max     = max
+
     def choose(self, value=None):
         if value is None:
             ret = (0 if (self.default is None) else self.default)
             return (ret, ret)
-        return (value, value)
-
+        return (value, (value if self.max is None else max(value, self.max)))
 
 class ParamListBox(Param):
 

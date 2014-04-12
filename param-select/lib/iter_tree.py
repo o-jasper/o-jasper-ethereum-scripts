@@ -10,7 +10,7 @@ class IterTree:
     def get_at(self, at):
         ret = self.chain
         for el in at[:-1]:
-            if len(ret) <= ret:
+            if len(ret) >= el:
                 return None
             ret = ret[el]
         return ret[at[-1]:]
@@ -21,6 +21,9 @@ class IterTree:
             return None
         if self.in_chain is None:
             self.in_chain = self.get_at(self.at)
+
+        if (type(self.in_chain) is not list or len(self.in_chain) == 0):
+            return None
         return self.in_chain[0]
 
     # Next, or choose depending on
@@ -30,18 +33,21 @@ class IterTree:
 
         self.at[-1] += 1
 
-        if self.in_chain is None: #Chain not yet located.
+        if self.in_chain is None:  # Chain not yet located.
             self.in_chain = self.get_at(self.at)
-        else: #Go forward in chain.
+        else:  # Go forward in chain.
             self.in_chain = self.in_chain[1:]
 
-        if len(self.in_chain) == 0: #Ran out of chain, see if we can go up.
+        if len(self.in_chain) == 0:  # Ran out of chain, see if we can go up.
             if len(self.at)<2:
                 self.at = None
                 return None
             self.at = self.at[:-2]
             self.at[-1] += 1
             self.in_chain = self.get_at(self.at)
+
+            assert not type(self.cur) is list  # This precludes selecting.
+            return self.cur
 
         if type(self.cur) is list:
             self.in_chain = self.cur[ni]
