@@ -39,7 +39,7 @@ class IterTree:
             self.in_chain = self.in_chain[1:]
 
         if len(self.in_chain) == 0:  # Ran out of chain, see if we can go up.
-            if len(self.at)<2:
+            if len(self.at) <= 2:
                 self.at = None
                 return None
             self.at = self.at[:-2]
@@ -49,7 +49,7 @@ class IterTree:
             assert not type(self.cur) is list  # This precludes selecting.
             return self.cur
 
-        if type(self.cur) is list:
+        if type(self.cur) is list:  # Only now ni is used to select.
             self.in_chain = self.cur[ni]
             self.at.append(ni)
             self.at.append(1)

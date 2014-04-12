@@ -41,11 +41,19 @@ def test_step(ps):
     if (ps.cur is None):
         return False
     
-    if len(ps.in_chain) < 2:  #Dropping out.
-        at = ps.at[:-2].copy()
-        at[-1] += 1
+    if len(ps.in_chain) <= 1:  #Dropping out.
+        at = ps.at.copy()
         ps.choose(some_val())
-        assert_str(ps.cur, ps.get_at(at), "E DO")
+        if len(at) <= 2:
+            assert_str(ps.cur, None, "E DO None(<=2)")
+        else:
+            at = at[:-2]
+            at[-1] += 1
+            got = ps.get_at(at)
+            if got is None:
+                assert_str(ps.cur, None, "E DO None")
+            else:
+                assert_str(ps.cur, got[0], "E DO")
     elif ps.in_chain is list and type(ps.in_chain[1]) is list:  # Choosing on.
         i = randrange(len(ps.in_chain[1]))
         expect = ps.in_chain[1][i][0]
@@ -58,7 +66,7 @@ def test_step(ps):
 j = 0
 while j < 10:
     ps = TestInstanceCreator().create_ps(10, 0.35)
-    print(ps.cur) #None??? WTF?
+    print(ps.cur) #TODO None??? WTF? The above setting shouldnt have any state?
     i = 0
     while test_step(ps):
         i += 1

@@ -6,7 +6,7 @@ from random import randrange
 py_path = os.path.join(os.path.dirname(__file__), '../lib')
 sys.path.append(py_path)
 
-from iter_tree import IterTree
+from IterTree import IterTree
 
 class SpecificTest():
     """Tests specific input."""

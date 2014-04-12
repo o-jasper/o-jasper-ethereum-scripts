@@ -1,5 +1,5 @@
 
-from iter_tree import IterTree
+from IterTree import IterTree
 
 class Param:
 
