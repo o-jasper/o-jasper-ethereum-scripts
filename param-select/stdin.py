@@ -5,13 +5,22 @@ from types import *
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
 
-from ParamSelect import ParamSelect, ParamBasic, ParamListBox
+from ParamSelect import *
+from ParamKinds import *
 
-ps = ParamSelect([ParamBasic("float", float), ParamBasic("int", int),
+ps = ParamSelect([ParamNumber("float"), ParamInt("int"),
                   ParamBasic("string",str)])
 
+print("Specify")
+ps.tell()
 for line in sys.stdin:
-    v = eval(line)
-    print(string(v) + " tp " + string(type(v)))
-#    ps.tell()
-#    ps.choose_parse(line)
+    ps.choose_parse(line)
+    if ps.cur is None:
+        break
+    ps.tell()
+
+print("Done")
+print(str(ps.max_class))
+print(str(ps.values))
+print("")
+print(str(ps.list(['float','int','string'])))
