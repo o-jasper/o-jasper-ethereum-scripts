@@ -39,7 +39,7 @@ class ParamNumberSep(ParamNumber):  # Single value, multiple cases.
     def choose(self, value=None):
         if value is None:
             value = self.default
-        return (value, 0 if (value < self.threshhold) else 1)
+        return (0 if (value < self.threshhold) else 1, value)
 
 class ParamInt(Param):
 
@@ -69,7 +69,7 @@ class ParamIntSep(ParamInt):
         if value is None:
             ret = (0 if (self.default is None) else self.default)
             return (ret, ret)
-        return (value, (value if self.max is None else max(value, self.max)))
+        return ((value if self.max is None else max(value, self.max)),value)
 
 class ParamNumberListRanges(Param):
     """List of ranges parameter. Also has a minimum and maximum.
@@ -105,9 +105,9 @@ class ParamNumberListRanges(Param):
 
         for i in range(len(self.opts)):
             if self.opts[i] > value:
-                return 0
+                return (i, value)
 
-        return len(self.opts)
+        return (len(self.opts), value)
 
 class ParamListBox(Param):
 
@@ -129,13 +129,14 @@ class ParamListBox(Param):
         if value is None:
             value = self.default
         i = self.find(value)
-        return (None if (i is None) else (list[i],i))
+        return ((-1, value) if (i is None) else (i,list[i]))
 
     def tell(self):
         text = ("options:" if (self.text == "") else self.text)
-        print(text + ("" if (self.default is None) else "(" + self.default + ")"))
+        ret = (text + ("" if (self.default is None) else "(" + self.default + ")"))
         for el in self.list:
-            print(el)
+            ret += el
+        return ret
 
 class WrongResult(Param):
 
