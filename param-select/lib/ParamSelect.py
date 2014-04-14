@@ -115,19 +115,20 @@ class ParamSelect():
         return self.get(self.at_i)
 
     def choose(self, value=None):
+        print(self.at_i)
         ni,value = self.list[self.at_i[0]].i_choose(self.at_i, value)
-        self.at_i = ni
 
         if self.cur is None:
             return None
         
-      # Keep track of the worst class.
-        cur_class = self.cur.classify(value)
+        cur_class = self.cur.classify(value)  # Keep track of the worst class.
         if self.max_class > cur_class or self.max_i is None:
             self.max_class = cur_class
             self.max_i = ni
         
-        self.values[self.cur.name] = (value, cur_class) #  Set the value.
+        self.values[self.cur.name] = (value, cur_class)  # Set the value.
+
+        self.at_i = ni  # Go to next one.
         return (ni, value)
 
     def choose_parse(self, string):
@@ -140,7 +141,7 @@ class ParamSelect():
     def tell(self):
         return self.cur.tell()
 
-    def list(self, names):
+    def list_names(self, names):
         list = []
         for el in names:
             list.append(self.values[el][0])
