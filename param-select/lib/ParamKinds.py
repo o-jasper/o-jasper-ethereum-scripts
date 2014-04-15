@@ -14,12 +14,12 @@ class ParamBasic(Param):
     def okey(self, value):
         return type(value) is self.type
 
-class ParamNumberListRanges(Param):
+class ParamNumber(Param):
     """List of ranges parameter. Also has a minimum and maximum.
     Note that it has fancy bells, but hardly worth also having the less
      complicated ones.
     """
-    def __init__(self, name, default=0, type=None, min=None,max=None,opts=[]):
+    def __init__(self, name, default=0, type=None, min=None, max=None, opts=None):
         self.name    = name
         self.default = default
         self.type    = type
@@ -48,11 +48,19 @@ class ParamNumberListRanges(Param):
         if value is None:
             value = self.default
 
-        for i in range(len(self.opts)):
-            if self.opts[i] > value:
-                return (i, value)
+        if type(self.opts) is list:
+            for i in range(len(self.opts)):
+                if self.opts[i] > value:
+                    return (i, value)
+            return (0,value)
+        elif type(self.opts) is float or type(self.opts) is int:
+            return (values % self.opts, value)
+        elif self.opts is None:
+            return (-1,value)
 
-        return (len(self.opts), value)
+def ParamInt(name, default=0, min=None, max=None,opts=None):
+    return ParamNumber(name, default=default, type=int,
+                       min=min, max=max, opts=opts)
 
 class ParamListBox(Param):
 

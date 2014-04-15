@@ -12,7 +12,7 @@ class _Param():
             return self._parse(string)
 
     def choose_parse(self, string):
-        return self.i_choose(self.parse(string))
+        return self.choose(self.parse(string))
 
     def okey(self, value):  # Returns if the value is okey.
         return true
@@ -89,13 +89,6 @@ class ParamList(_Param):
 
 # Other parameters kinds in ParamKinds.py
 
-def list_get(chain, i)
-    assert type(i) is list and len(i) >= 1 and type(chain) is list
-    if i[0] < len(chain):
-        return chain[i[0]].get(i[1:])
-    else:
-        return None
-
 class ParamSelect(object):
     """Chain of choices if one entry is a list.
     Things earlier in the list can select things later in the list.
@@ -108,22 +101,26 @@ class ParamSelect(object):
         self.values  = values
 
     def get(self, i):
-        return list_get(self.list, i)
+        assert type(i) is list and len(i) >= 1 and type(self.list) is list
+        if i[0] < len(self.list):
+            return self.list[i[0]].get(i[1:])
+        else:
+            return None
+
 
     @property
     def cur(self):
         return self.get(self.at_i)
 
     def choose(self, value=None):  # Choose and get the next.
-        print(self.at_i)
         ni,value = self.list[self.at_i[0]].i_choose(self.at_i, value)
 
         if self.cur is None:
             return None
         
         cur_class = self.cur.classify(value)  # Keep track of the worst class.
-        to = (self.at_i, value, cur_class)  # Set the value.
-        self.values[self.cur.name] = 
+        to = (self.at_i, value, cur_class)  
+        self.values[self.cur.name] = to # Set the value.
 
         self.at_i = ni  # Go to next one.
         return to
@@ -155,5 +152,5 @@ class ParamSelect(object):
     def list_names(self, names):
         list = []
         for el in names:
-            list.append(self.values[el][0])
+            list.append(self.values[el][1])
         return list

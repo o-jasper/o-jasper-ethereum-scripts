@@ -20,7 +20,6 @@ for line in sys.stdin:
     ps.tell()
 
 print("Done")
-print(str(ps.max_class))
 print(str(ps.values))
 print("")
 print(str(ps.list_names(['float','int','string'])))
