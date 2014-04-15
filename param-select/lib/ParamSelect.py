@@ -1,5 +1,5 @@
 
-class _Param:
+class _Param():
 
     @property
     def text(self):
@@ -89,32 +89,32 @@ class ParamList(_Param):
 
 # Other parameters kinds in ParamKinds.py
 
-class ParamSelect():
+def list_get(chain, i)
+    assert type(i) is list and len(i) >= 1 and type(chain) is list
+    if i[0] < len(chain):
+        return chain[i[0]].get(i[1:])
+    else:
+        return None
+
+class ParamSelect(object):
     """Chain of choices if one entry is a list.
     Things earlier in the list can select things later in the list.
 
     It can also act as a classifier of choices."""
-    max_i = None
-    max_class = 0
-
     at_i = [0]
 
     def __init__(self, list, values={}):
         self.list    = list
-        self.values   = values
+        self.values  = values
 
     def get(self, i):
-        assert type(i) is list and len(i) >= 1
-        if i[0] < len(self.list):
-            return self.list[i[0]].get(i[1:])
-        else:
-            return None
+        return list_get(self.list, i)
 
     @property
     def cur(self):
         return self.get(self.at_i)
 
-    def choose(self, value=None):
+    def choose(self, value=None):  # Choose and get the next.
         print(self.at_i)
         ni,value = self.list[self.at_i[0]].i_choose(self.at_i, value)
 
@@ -122,14 +122,25 @@ class ParamSelect():
             return None
         
         cur_class = self.cur.classify(value)  # Keep track of the worst class.
-        if self.max_class > cur_class or self.max_i is None:
-            self.max_class = cur_class
-            self.max_i = ni
-        
-        self.values[self.cur.name] = (value, cur_class)  # Set the value.
+        to = (self.at_i, value, cur_class)  # Set the value.
+        self.values[self.cur.name] = 
 
         self.at_i = ni  # Go to next one.
-        return (ni, value)
+        return to
+
+    def update(self, i, value):
+        if self.at_i[:len(i)] is i: #On active path, might change it.
+            self.at_i = i
+            ret = self.choose(value)
+            while self.cur.name in self.values: #Move forward insofar it is set.
+                self.choose(self.values[self.cur.name])
+            return ret
+        else:
+            got = get(i)
+            got.choose(value)  # (Might not do anything), but..)
+            to = (i, value, got.classify(value))
+            self.values[got.name] = to
+            return to
 
     def choose_parse(self, string):
         return self.choose(self.cur.parse(string))

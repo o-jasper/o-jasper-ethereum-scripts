@@ -14,65 +14,10 @@ class ParamBasic(Param):
     def okey(self, value):
         return type(value) is self.type
 
-class ParamNumber(Param):
-
-    def __init__(self, name, default=0):
-        self.name       = name
-        self.default    = default
-
-    @property
-    def text(self):
-        return "Number-parameter"
-
-    def okey(self, value):
-        return type(value) is float or type(value) is int
-
-    def _parse(self, string):
-        return float(string)
-
-class ParamNumberSep(ParamNumber):  # Single value, multiple cases.
-    def __init__(self, name, threshhold=0, default=0):
-        self.name       = name
-        self.default    = default
-        self.threshhold = threshhold
-
-    def choose(self, value=None):
-        if value is None:
-            value = self.default
-        return (0 if (value < self.threshhold) else 1, value)
-
-class ParamInt(Param):
-
-    def __init__(self, name, default=0):
-        self.name       = name
-        self.default    = default
-        assert self.okey(self.default)
-
-    @property
-    def text(self):
-        return "Integer-parameter"
-
-    def okey(self, value):
-        return type(value) is int
-
-    def _parse(self, string):
-        return int(string)
-
-class ParamIntSep(ParamInt):
-
-    def __init__(self, name, default=0, max=None):
-        self.name    = name
-        self.default = default
-        self.max     = max
-
-    def choose(self, value=None):
-        if value is None:
-            ret = (0 if (self.default is None) else self.default)
-            return (ret, ret)
-        return ((value if self.max is None else max(value, self.max)),value)
-
 class ParamNumberListRanges(Param):
     """List of ranges parameter. Also has a minimum and maximum.
+    Note that it has fancy bells, but hardly worth also having the less
+     complicated ones.
     """
     def __init__(self, name, default=0, type=None, min=None,max=None,opts=[]):
         self.name    = name
