@@ -54,7 +54,7 @@ class ParamNumber(Param):
                     return (i, value)
             return (0,value)
         elif type(self.opts) is float or type(self.opts) is int:
-            return (values % self.opts, value)
+            return (int(value / self.opts), value)
         elif self.opts is None:
             return (-1,value)
 

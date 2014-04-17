@@ -41,10 +41,11 @@ class Param(_Param):
 
     #  Returns chosen value and next index list, given a value and index list..
     def i_choose(self, i, value=None):
+        print(i, self)
         assert type(i) is list and len(i) == 1
 
         j,ret = self.choose(value)
-        return  ([i[0]+1], ret) if (j < 0) else (i+[j,0], ret)
+        return  (([i[0]+1] if (j < 0) else i+[j,0]), ret)
 
     def tell(self):  # Return string describing self.
         return self.text + ("" if (self.default is None)
@@ -60,20 +61,23 @@ class ParamList(_Param):
         self.top = top
         self.list = list
 
+    @property
+    def name(self):
+        return self.top.name
+
     def i_choose(self, i, value=None):
         assert type(i) is list and len(i) >= 1
-
         if len(i) == 1:
             return self.top.i_choose(i,value)
         else:
-            j,ret = self.list[i[1]].i_choose(i[1:], value)
+            j,ret = self.list[i[1]].i_choose(i[2:], value)
             return (i + j, ret)
 
     def okey(self, value):
         return self.top.okey(value)
 
     def classify(self, value):
-        return self.top.classifiy(value)
+        return self.top.classify(value)
 
     def tell(self):
         return self.top.tell()
@@ -90,8 +94,7 @@ class ParamList(_Param):
 # Other parameters kinds in ParamKinds.py
 
 class ParamSelect(object):
-    """Chain of choices if one entry is a list.
-    Things earlier in the list can select things later in the list.
+    """Chain of choices, entries can choose between different branches.
 
     It can also act as a classifier of choices."""
     at_i = [0]
@@ -107,16 +110,15 @@ class ParamSelect(object):
         else:
             return None
 
-
     @property
     def cur(self):
         return self.get(self.at_i)
 
     def choose(self, value=None):  # Choose and get the next.
-        ni,value = self.list[self.at_i[0]].i_choose(self.at_i, value)
-
         if self.cur is None:
             return None
+
+        ni,value = self.list[self.at_i[0]].i_choose(self.at_i, value)
         
         cur_class = self.cur.classify(value)  # Keep track of the worst class.
         to = (self.at_i, value, cur_class)  
@@ -149,6 +151,8 @@ class ParamSelect(object):
     def tell(self):
         return self.cur.tell()
 
+    # TODO reading settings.
+    
     def list_names(self, names):
         list = []
         for el in names:
