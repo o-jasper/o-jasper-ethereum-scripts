@@ -26,6 +26,10 @@ class _Param():
     def classify(self, value):
         return 0 if self.okey(value) else 1024
 
+   # If value not correct, seek a correct one.
+    def seek_correct(self, value, mode= None):
+        return value if self.okey(value) else None
+        
 
 class Param(_Param):
 

@@ -25,6 +25,8 @@ class ParamNumber(Param):
         self.type    = type
         self.min     = min
         self.max     = max
+        if not (self.min is None or self.max is None):
+            assert self.min <=  self.max
         self.opts    = opts  # Rising list of numbers < all index 0  otherwise more.
 
     def okey(self, value):
@@ -58,6 +60,15 @@ class ParamNumber(Param):
         elif self.opts is None:
             return (-1,value)
 
+    def seek_correct(self, value, mode=None):
+        if not self.min is None:
+            value = max(self.min, value)
+        if not self.max is None:
+            value = min(self.max, value)
+        if self.type is int:
+            value = int(value)
+        return value
+
 def ParamInt(name, default=0, min=None, max=None,opts=None):
     return ParamNumber(name, default=default, type=int,
                        min=min, max=max, opts=opts)
@@ -90,8 +101,27 @@ class ParamListBox(Param):
         for el in self.list:
             ret += el
         return ret
+    
+    def seek_correct(self, value, mode=None):
+        if mode is 'closest':  # Use  closest value.
+            d = abs(value - list[0])
+            got = list[0]
+            for el in self.list[1:]:
+                if abs(value - el) < d:
+                    d = abs(value - el)
+                    got = el
+            return got
+        return None
 
-class WrongResult(Param):
+class ParamCheckResult(Param):
+    def __init__(self, name, list, default=None, fun=None):
+        self.name = name
+        self.list = list
+        self.default = default
+        self.fun = fun
 
     def okey(self, value):
-        return False
+        if self.fun is None:
+            return False
+        else:
+            return self.fun(value)
