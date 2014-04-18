@@ -1,6 +1,7 @@
 from ParamSelect import Param
 
 class ParamBasic(Param):
+    """Basic type, if you dont want features, you could choose this one."""
 
     def __init__(self, name, type, default=None):
         self.name = name
@@ -73,6 +74,13 @@ def ParamInt(name, default=0, min=None, max=None,opts=None):
     return ParamNumber(name, default=default, type=int,
                        min=min, max=max, opts=opts)
 
+class ParamString(Param):
+    def okey(self, value):
+        return type(value) is str
+
+    def _parse(self, string):  # Thats all it does above ParamBasic.
+        return string
+
 class ParamListBox(Param):
 
     def __init__(self, name, list, default=None):
@@ -103,7 +111,7 @@ class ParamListBox(Param):
         return ret
     
     def seek_correct(self, value, mode=None):
-        if mode is 'closest':  # Use  closest value.
+        if mode is 'closest':  # Use  closest value.(Only when that makes sense, of course)
             d = abs(value - list[0])
             got = list[0]
             for el in self.list[1:]:

@@ -1,6 +1,10 @@
 
 class _Param():
 
+    def __init__(self, name, default=None):
+        self.name = name
+        self.default = default
+
     @property
     def text(self):
         return "Parameter for " + str(type(self))
@@ -16,7 +20,10 @@ class _Param():
 
     def okey(self, value):  # Returns if the value is okey.
         return true
-    
+
+    def other_classify(self, value):
+        return 0
+
    # Classifies values.(In context of tx firewall,
    # currently think maybe(might use different approach than returning numbers..)
    # *   0:    pass through, human oversight not necessary.
@@ -24,18 +31,15 @@ class _Param():
    # *   2:    human should really look at it and make decision.
    # * >=1024: bug/trust issue.
     def classify(self, value):
-        return 0 if self.okey(value) else 1024
+        return self.other_classify(value) if self.okey(value) else 1024
 
    # If value not correct, seek a correct one.
-    def seek_correct(self, value, mode= None):
+   # NOTE assume it doesnt neccesarily produce a correct value unless it is well tested.
+    def seek_correct(self, value, mode=None):
         return value if self.okey(value) else None
         
 
 class Param(_Param):
-
-    def __init__(self, name, default=None):
-        self.name = name
-        self.default = default
 
     def _parse(self,string):
         return eval(string)  # TODO too trustful.
