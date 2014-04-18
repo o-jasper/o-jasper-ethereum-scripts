@@ -38,7 +38,7 @@ class TestBase:
             print(name, ": ", v, " vs ", self.ps.values[name])
         assert self.ps.values[name][1] == v
 
-class TestPlain(TestBase):
+class TestExample(TestBase):
     def __init__(self, debug=False):
         self.debug = debug
         self.pick([1,2,[3,4,5,6],7])
@@ -50,9 +50,10 @@ class TestPlain(TestBase):
         self.choose_assert(3, r)
         self.choose_assert(4 + r, random())
         self.choose_assert(7, random())
+        assert self.ps.cur is None
 
 for k in range(100):
-    TestPlain().test()
+    TestExample().test()
 
 class TestLinear(TestBase):
     def __init__(self, n=100, debug=False):
@@ -62,10 +63,12 @@ class TestLinear(TestBase):
 
     def test(self):
         for i in range(self.n):
+            assert not self.ps.cur is None
             self.choose_assert(i, random())
+        assert self.ps.cur is None
 
 TestLinear().test()
-        
+
 # Creates a param selector... I _just_ wanted a local function..
 #class TestInstanceCreator:
 #    def create_ps_list(self, N, p):
