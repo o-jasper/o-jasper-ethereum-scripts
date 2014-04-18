@@ -23,8 +23,8 @@ from ParamKinds import ParamNumber, ParamBasic
 win = Gtk.Window()
 win.connect("delete-event", Gtk.main_quit)  # Stop program if closed.
 
-p = ParamNumberGtk(ParamNumber('mew'))
-s = ParamStringGtk(ParamBasic('miauw',str))
+p = ParamNumberGtk(ParamNumber('Number parameter selector'))
+s = ParamStringGtk(ParamBasic('String input selector',str))
 
 win.add(ParamKindsGtk.pack_end([p.gtk_el, s.gtk_el]))
 
