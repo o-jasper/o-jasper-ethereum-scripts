@@ -69,11 +69,7 @@ class ParamBranch(_Param):
         assert type(i) is list
 
         if len(i) > 0:  # Already going down a path.
-            j,ret = self.list[i[0]].i_choose(i[1:], value)
-            if len(j) > 0:
-                return j, ret
-            else:
-                return [], ret
+            return self.list[i[0]].i_choose(i[1:], value)
         else:  # First touch of branching, figure out the path.
             j,ret = self.top.choose(value)
             assert j >= 0
