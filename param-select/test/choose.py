@@ -4,47 +4,55 @@ from random import random, randrange
 py_path = os.path.join(os.path.dirname(__file__), '../lib')
 sys.path.append(py_path)
 
-from ParamSelect import ParamSelect, ParamList
+from ParamSelect import ParamSelect, ParamBranch
 from ParamKinds import ParamNumber
 
 class TestBase:
-    k = 0
     ps = None
+    debug=False
 
-    def num(self, opts=None):
-        self.k += 1
-        return ParamNumber(name=self.k, type=int, opts=opts)
+    def num(self, name, opts=None):
+        return ParamNumber(name=name, type=int, opts=opts)
+    
+    def list_pick(self, in_list):
+        arr = []
+        for el in in_list:
+            if type(el) is int:
+                arr.append(self.num(el))
+            elif type(el) is list:
+                arr.append(ParamBranch(self.num(el[0], opts=1), self.list_pick(el[1:])))
+        return arr
 
-    def down(self, n=0, arr=None):
-        top = self.num(opts=1)
-        if arr is None:
-            arr = []
-            for el in range(n):
-                arr.append(self.num())
-        return ParamList(top, arr)
+    def pick(self, list):
+        self.ps = ParamSelect(self.list_pick(list))
 
     def choose_assert(self, name, v):
+        if self.debug:
+            print(self.ps.at_i)
         assert not self.ps.cur is None
         self.ps.choose(v)
-        print(self.ps.values, name, v)
+        if self.debug:
+            print(self.ps.values, name, v)
         assert name in self.ps.values
+        if self.debug:
+            print(name, ": ", v, " vs ", self.ps.values[name])
         assert self.ps.values[name][1] == v
 
 class TestPlain(TestBase):
-    n = randrange(2,4)
-    def __init__(self):
-        print(self.n)
-        self.ps = ParamSelect([self.num(),self.num(),self.down(self.n),self.num()])
+    def __init__(self, debug=False):
+        self.debug = debug
+        self.pick([1,2,[3,4,5,6],7])
 
     def test(self):
         self.choose_assert(1, random())
         self.choose_assert(2, random())
-        r = randrange(self.n)
+        r = randrange(3)
         self.choose_assert(3, r)
         self.choose_assert(4 + r, random())
-#        self.choose_assert(6 + self.n, random())
+        self.choose_assert(7, random())
 
-TestPlain().test()
+for k in range(100):
+    TestPlain().test()
         
 # Creates a param selector... I _just_ wanted a local function..
 #class TestInstanceCreator:
@@ -56,7 +64,7 @@ TestPlain().test()
 #            while random() < p:
 #                arr.append(self.create_ps_list(N-i-1, p))
 #            list.append(sep())
-#            list.append(ParamList(sep(), arr) if len(arr)>0 else sep())
+#            list.append(ParamBranch(sep(), arr) if len(arr)>0 else sep())
 #            i += 1
 #        return list
 #
