@@ -44,7 +44,7 @@ class Param(_Param):
         assert type(i) is list # and len(i) == 1
 
         j,ret = self.choose(value) #Index ignored, no index capability.
-        return (i[:-1], ret)
+        return ([], ret)
 
     def tell(self):  # Return string describing self.
         return self.text + ("" if (self.default is None)
@@ -69,11 +69,15 @@ class ParamBranch(_Param):
         assert type(i) is list
 
         if len(i) > 0:  # Already going down a path.
-            return self.list[i[0]].i_choose(i[1:], value)
+            j,ret = self.list[i[0]].i_choose(i[1:], value)
+            if len(j) > 0:
+                return j, ret
+            else:
+                return [], ret
         else:  # First touch of branching, figure out the path.
             j,ret = self.top.choose(value)
             assert j >= 0
-            return (i + [j], ret)
+            return [j], ret
 
     def okey(self, value):
         return self.top.okey(value)
