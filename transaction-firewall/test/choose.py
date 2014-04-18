@@ -42,15 +42,20 @@ class TestBase:
 class TestExample(TestBase):
     def __init__(self, debug=False):
         self.debug = debug
-        self.pick([1,2,[3,4,5,6],7])
+        self.pick([1,2,[3,7,8,[4,5,6]],10])
 
     def test(self):
         self.choose_assert(1, random())
         self.choose_assert(2, random())
         r = randrange(3)
         self.choose_assert(3, r)
-        self.choose_assert(4 + r, random())
-        self.choose_assert(7, random())
+        if r == 2:
+            r2 = randrange(2)
+            self.choose_assert(4, r2)
+            self.choose_assert(5 + r2, 7.778)
+        else:
+            self.choose_assert(7 + r, random())
+        self.choose_assert(10, random())
         assert self.ps.cur is None
 
 for k in range(100):
@@ -99,7 +104,7 @@ class TestBranch(TestBase):
         for i in range(self.depth):
             r = randrange(self.n)
             at.append(r)
-            # self.choose_assert(str(at), r)  #Hrmm
+#            self.choose_assert(str(at), r) 
             self.ps.choose(r)
             assert at == self.ps.at_i[1:]
 

@@ -8,5 +8,5 @@ transactions a program produces, allowing that to be checked. It may also serve
 as a 'look at this transaction before sending' warning.
 
 ## Creating input
-Turns out the other side of the coin is selecting parameters there is a
+Turns out the other side of the coin is selecting parameters. There is a
 simple stdin, and gtk gui under development.
