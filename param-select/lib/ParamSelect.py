@@ -112,11 +112,10 @@ class ParamSelect(ParamSequence):
     """Chain of choices, entries can choose between different branches.
 
     It can also act as a classifier of choices."""
-    at_i = [0]
-
-    def __init__(self, list, values={}):
+    def __init__(self, list, values=None):
+        self.at_i = [0]
         self.list    = list
-        self.values  = values
+        self.values  = {} if (values is None) else values
 
     def get(self, i):
         assert type(i) is list and type(self.list) is list

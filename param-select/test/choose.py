@@ -8,8 +8,9 @@ from ParamSelect import ParamSelect, ParamBranch
 from ParamKinds import ParamNumber
 
 class TestBase:
-    ps = None
-    debug=False
+    def __init__(self):
+        self.ps = None
+        self.debug = False
 
     def num(self, name, opts=None):
         return ParamNumber(name=name, type=int, opts=opts)
@@ -17,10 +18,10 @@ class TestBase:
     def list_pick(self, in_list):
         arr = []
         for el in in_list:
-            if type(el) is int:
-                arr.append(self.num(el))
-            elif type(el) is list:
+            if type(el) is list:
                 arr.append(ParamBranch(self.num(el[0], opts=1), self.list_pick(el[1:])))
+            else:
+                arr.append(self.num(el))
         return arr
 
     def pick(self, list):
@@ -69,42 +70,37 @@ class TestLinear(TestBase):
 
 TestLinear().test()
 
-# Creates a param selector... I _just_ wanted a local function..
-#class TestInstanceCreator:
-#    def create_ps_list(self, N, p):
-#        list = [sep()]
-#        i = 0
-#        while i < N:
-#            arr = []
-#            while random() < p:
-#                arr.append(self.create_ps_list(N-i-1, p))
-#            list.append(sep())
-#            list.append(ParamBranch(sep(), arr) if len(arr)>0 else sep())
-#            i += 1
-#        return list
-#
-#    def create_ps(self, N, p):
-#         return ParamSelect(self.create_ps_list(N, p))
-#
-#def some_val():
-#    randrange(0, 100)
-#
-#def assert_str(a, b, str):
-#    if not a is b:
-#        print("%s: %s vs %s" % (str, a, b))
-#        assert False
-#
-#def test_step(ps):
-#    return not ps.choose(some_val()) is None
-#
-#j = 0
-#while j < 10:
-#    ps = TestInstanceCreator().create_ps(10, 0.35)
-#    print(ps.cur) #TODO None??? WTF? The above setting shouldnt have any state?
-#    i = 0
-#    while test_step(ps):
-#        i += 1
-#        print("*" + str(i))
-#    j += 1
-#    print("--" + str(j))
-#
+class TestBranch(TestBase):
+    def __init__(self, n=2, depth=2, debug=False):
+        self.debug = debug
+
+        self.depth = depth
+        self.n = n
+
+        self.arr = self.gen_arr(n, depth, [])
+        print(self.arr)
+        self.pick(self.arr)
+        
+    def gen_arr(self, n, depth, p):
+        arr = []
+        if depth < 0:
+            for i in range(n):
+                arr.append(str(p + [i]))
+        else:
+            arr.append(str(p))
+            for i in range(n):    
+                arr.append(self.gen_arr(n, depth-1, p + [i]))
+        return arr
+    
+    def test(self):
+        at = []
+        print(self.ps.values)
+        self.choose_assert('[]', random())
+        for i in range(self.depth):
+            r = randrange(self.n)
+            at.append(r)
+            # self.choose_assert(str(at), r)  #Hrmm
+            self.ps.choose(r)
+            assert at == self.ps.at_i[1:]
+
+TestBranch(debug=True).test()
