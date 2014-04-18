@@ -53,6 +53,18 @@ class TestPlain(TestBase):
 
 for k in range(100):
     TestPlain().test()
+
+class TestLinear(TestBase):
+    def __init__(self, n=100, debug=False):
+        self.debug = debug
+        self.n = n
+        self.pick(range(n))
+
+    def test(self):
+        for i in range(self.n):
+            self.choose_assert(i, random())
+
+TestLinear().test()
         
 # Creates a param selector... I _just_ wanted a local function..
 #class TestInstanceCreator:
