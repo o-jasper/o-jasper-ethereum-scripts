@@ -98,8 +98,21 @@ class TestBranch(TestBase):
                 arr.append(self.gen_arr(n, depth-1, p + [i]))
         return arr
 
+    def gi(self, depth=None):
+        if depth is None:
+            depth = randrange(self.depth)
+        assert depth < self.depth
+        i = [0]
+        for el in range(max(0,depth-1)):
+            i.append(randrange(self.n))
+        return i
 
-    def test(self):
+    def test_get(self, n=100):
+        for el in range(n):
+            i = self.gi()
+            assert self.ps.get(i) is not None
+
+    def test_choose(self):
         if self.debug:
             print('got', self.arr)
             print('--')
@@ -112,5 +125,9 @@ class TestBranch(TestBase):
             assert [0] + at == self.ps.at_i
         self.choose_assert(str(at), 5.55)
         assert self.ps.cur is None
+
+    def test(self):
+        self.test_get()
+        self.test_choose()
 
 TestBranch().test()

@@ -15,6 +15,9 @@ class _Param():
         else:
             return self._parse(string)
 
+    def choose(self, value):
+        return (-1, value)
+
     def choose_parse(self, string):
         return self.choose(self.parse(string))
 
@@ -44,9 +47,6 @@ class Param(_Param):
     def _parse(self,string):
         return eval(string)  # TODO too trustful.
 
-    def choose(self, value):
-        return (-1, value)
-
     #  Returns chosen value and next index list, given a value and index list..
     def i_choose(self, i, value=None):
         assert type(i) is list # and len(i) == 1
@@ -60,7 +60,6 @@ class Param(_Param):
 
     def get(self, i):
         assert type(i) is list
-#        assert len(i) == 1
         return self
 
 class ParamBranch(_Param):
@@ -86,8 +85,8 @@ class ParamBranch(_Param):
     def okey(self, value):
         return self.top.okey(value)
 
-    def classify(self, value):
-        return self.top.classify(value)
+    def other_classify(self, value):
+        return self.top.other_classify(value)
 
     def tell(self):
         return self.top.tell()
@@ -149,14 +148,17 @@ class ParamSelect(ParamSequence):
         return to
 
     def update(self, i, value):
-        if self.at_i[:len(i)] is i: #On active path, might change it.
+        if self.at_i[:len(i)] is i:  # On active path, might change it.
             self.at_i = i
             ret = self.choose(value)
-            while self.cur.name in self.values: #Move forward insofar it is set.
+            # Move back forward insofar it is set.
+            while self.cur.name in self.values:
                 self.choose(self.values[self.cur.name])
             return ret
         else:
-            got = get(i)
+            got = self.get(i)
+            if got is None:
+                return None
             got.choose(value)  # (Might not do anything), but..)
             to = (i, value, got.classify(value))
             self.values[got.name] = to
