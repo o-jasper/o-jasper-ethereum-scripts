@@ -1,0 +1,40 @@
+
+# Any hash tried on ethereum can be tried here.
+if tx.data[0] == C_TRY:
+    # Must put a participation stake in to try, if not participating already.
+    if contract.storage[tx.sender] == 0 and tx.value < PARTICIPATION_STAKE:
+        stop
+    contract.storage[tx.sender + 0] = block.number  # Timer always resets.
+
+    score = sha3(sha3(tx.data[1] xor contract.address xor block.prevhash))
+    if score < contract.storage[I_DIFFICULTY]:
+        contract.storage[tx.sender + 1] += REWARD
+        stop
+    stop
+
+if tx.data[0] == C_VOTE_PUNISH:  # Also collects rewards!
+    addr = tx.data[0]
+    n = contact.storage[addr]
+
+    if n == 0:
+        stop  # No-one registered under the name to be punished.
+
+    if n > block.number + REWARD_WAIT:  # Too late to punish, rewarding instead.
+        mktx(addr, contract.storage[addr + 1], 0, [])
+        stop
+
+    if !contract.storage[tx.sender + 3]:
+        stop  # No voting rights.
+
+    i = addr + 3
+    while contract.storage[i] != 0:
+        if contract.storage[i] == tx.sender:
+            stop  # Already voted!
+        i += 1
+    if i > VOTES_NEEDED - addr - 3:
+        while i >= addr:  # Remove the account entirely.
+            contract.storage[i] = 0
+            i -= 1
+        stop
+    else:
+        contract.storage[i] = tx.sender  # Add signature.
