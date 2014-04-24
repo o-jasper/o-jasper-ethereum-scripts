@@ -3,6 +3,7 @@ import choose
 
 class TestExample(choose.TestBranch):
 
+    # NOTE very limited, should check if at_i is changed correctly.
     def test_update(self):
         i,r = self.gi(), random()
         self.ps.update(i, r)

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import sys, os
-from types import *
-
 sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
 
 from ParamSelect import *
