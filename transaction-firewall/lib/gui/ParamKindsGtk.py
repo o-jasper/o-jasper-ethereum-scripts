@@ -1,7 +1,7 @@
 # from ParamKinds import *
 from gi.repository import Gtk
 from ParamKinds import *
-from ParamSelect import ParamSequence
+from ParamSelect import ParamSequence, ParamBranch
 
 def is_number(x):
     return type(x) is float or type(x) is int
@@ -27,6 +27,11 @@ class ParamGtkBase:
     def __init__(self, it, parentinfo=None):
         self.it = it
         self.parentinfo = parentinfo
+
+    def value_changed(self, value):
+        if not self.parentinfo is None:
+            i,parent = self.parentinfo
+            parent.update(i, self.get_value())
 
     def hide(self):
         if not self.hidden:
@@ -54,18 +59,24 @@ class ParamSequenceGtk(ParamGtkBase):
 
 class ParamNumberGtk(ParamGtkBase):
     """For next to any number param kind"""
-    def __init__(self, it, parentinfo=None, digits=2, size=600, climb_rate=None):
+    def __init__(self, it, parentinfo=None, digits=None, size=600, climb_rate=None):
         self.parentinfo = parentinfo
         self.it = it
         
         fx,tx = if_none(0, it.min),if_none(1, it.max)
-
         climb_rate = if_none((tx - fx)/100.0, climb_rate)
+
+        if it.type is int:
+            assert digits is None
+            digits = 0
+            fx,tx = if_none(0, it.min),if_none(100, it.max)
+            climb_rate = 1
+        
         self.adjustment = Gtk.Adjustment(value=if_none(fx, it.default), lower=fx, upper=tx,
                                          step_incr=climb_rate, page_incr=5*climb_rate)
-        
+
         self.spinner = Gtk.SpinButton(adjustment=self.adjustment,
-                                      climb_rate=climb_rate, digits=digits)
+                                      climb_rate=climb_rate, digits=if_none(2,digits))
         self.spinner.set_range(fx, tx)
         self.spinner.name = it.name
 
@@ -81,11 +92,6 @@ class ParamNumberGtk(ParamGtkBase):
         self.value_changed(adjustment.get_value())
         return 0
             
-    def value_changed(self, value):
-        if not self.parentinfo is None:
-            i,parent = self.parentinfo
-            parent.update(i, value)
-
     def spinner_change_value(self, sb, st):
         print('---',st)
         print(Gtk.GTK_SCROLL_STEP_UP)
@@ -109,27 +115,76 @@ class ParamNumberGtk(ParamGtkBase):
         self.adjustment.set_value(value)  # Should trigger value changed.
 
     def get_value(self):
-        return self.adjustment.get_value()
+        if self.it.type is int:
+            return int(self.adjustment.get_value())
+        else:
+            return self.adjustment.get_value()
 
 class ParamStringGtk(ParamGtkBase):
     def __init__(self, it, parentinfo=None):
+        self.parentinfo = parentinfo
+
         self.entry = Gtk.Entry()
+    
+        self.entry.connect("changed", self.entry_changed)
+        
         self.gtk_el = pack_start([Gtk.Label(it.name + ":"), self.entry])
 
+    def entry_changed(self, entry):
+        self.value_changed(entry.get_text())
+
+    def set_value(self, value):
+        self.entry.set_text(value)
+    def get_value(self):
+        return self.entry.get_text()
+
+class ParamListBoxGtk(ParamGtkBase):
+    def __init__(self, it, parentinfo=None):
+        self.parentinfo = parentinfo
+
+        self.combo = Gtk.ComboBoxText()
+        for el in it.list:
+            self.combo.append_text(str(el))
+        self.combo.connect("changed", self.combo_changed)
+
+        self.gtk_el = pack_start([Gtk.Label(it.name + ":"), self.combo])
+
+    def combo_changed(self, combo):
+        self.value_changed(combo.get_active())
+    
+    def set_value(self, value):
+        for i in range(len(it.list)):
+            if it.list[i] is value:
+                self.entry.set_active(i)
+    def get_value(self):
+        return max(self.entry.get_active(), 0)
+        
+
+# Figures out which gui element fits with the parameter kind, and adds it.
 def figure_gui_el(of, parentinfo):
     if of.gtk is not None:
         return of.gtk
+
     elif type(of) is ParamSequence:
         of.gtk = ParamSequenceGtk(figure_gui_element(of.top,i, parent), parentinfo)
+
     elif type(of) is ParamNumber:
         of.gtk = ParamNumberGtk(of, parentinfo)
+
     elif type(of) is ParamString:
         of.gtk = ParamStringGtk(of,  parentinfo)
+
     elif type(of) is ParamBasic:
         if of.type is str:
             of.gtk = ParamStringGtk(of, parentinfo)
         elif of.type is int or of.type is number:
             of.gtk = ParamNumberGtk(of, parentinfo)
+
+    elif type(of) is ParamListBox:
+        of.gtk = ParamListBoxGtk(of, parentinfo)
+
+    elif type(of) is ParamBranch:
+        of.gtk = figure_gui_el(of.top, parentinfo)  # TODO
 
     i = parentinfo[0]
     if len(i) >= 2:

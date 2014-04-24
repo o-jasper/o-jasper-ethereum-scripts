@@ -115,6 +115,18 @@ class ParamSequence(_Param):
         else:  # Keep going on path.
             return i + j, ret
 
+def param_list_handler(input):
+    ret = []
+    for el in input:
+        if type(el) is list:
+            assert len(el) > 0
+            ret.append(ParamBranch(el[0], param_list_handler(el[1:])))
+        else:
+            ret.append(el)
+    print('*', input)
+    print('=', ret)
+    return ret
+
 # Other parameters kinds in ParamKinds.py
 
 class ParamSelect(ParamSequence):
@@ -123,7 +135,7 @@ class ParamSelect(ParamSequence):
     It can also act as a classifier of choices."""
     def __init__(self, list, values=None):
         self.at_i = [0]
-        self.list    = list
+        self.list    = param_list_handler(list)
         self.values  = {} if (values is None) else values
 
     def get(self, i):

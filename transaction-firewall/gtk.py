@@ -8,9 +8,14 @@ from gi.repository import Gtk
 
 from ParamSelectGtk import *
 from ParamKinds import *
+from ParamSelect import ParamBranch
 
-ps = ParamSelectGtk([ParamNumber("float"), ParamInt("int"),
-                    ParamBasic("string",str)], {'a':'b'})
+ps = ParamSelectGtk([ParamNumber("float"), ParamBasic("first",str),
+                     ParamListBox("list",["a","b"]),
+                     [ParamInt("int", opts=1),
+                      ParamBasic("string",str),
+                      ParamNumber("num",str)]])
+                    
 
 win = Gtk.Window()
 win.connect("delete-event", Gtk.main_quit)  # Stop program if closed.
