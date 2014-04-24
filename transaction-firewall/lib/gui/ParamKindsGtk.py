@@ -1,5 +1,7 @@
 # from ParamKinds import *
 from gi.repository import Gtk
+from ParamKinds import *
+from ParamSelect import ParamSequence
 
 def is_number(x):
     return type(x) is float or type(x) is int
@@ -33,14 +35,14 @@ class ParamGtkBase:
 
     def show(self, show=True):
         if not show:
-            self.hide()
+            self.hide()                                 
         elif self.hidden:
             self.gtk_el.show()
             self.hidden = False
 
-class ParamListGtk(ParamGtkBase):
-    """Just for ParamList"""
-    def __init__(self, top=None, max=None, parentinfo=None):
+class ParamSequenceGtk(ParamGtkBase):
+    """Just for ParamSequence"""
+    def __init__(self, top=None, parentinfo=None, max=None):
         self.top = top
         self.gtk_el = vbox([top])
         # self.parentinfo = parentinfo
@@ -113,3 +115,36 @@ class ParamStringGtk(ParamGtkBase):
     def __init__(self, it, parentinfo=None):
         self.entry = Gtk.Entry()
         self.gtk_el = pack_start([Gtk.Label(it.name + ":"), self.entry])
+
+def figure_gui_el(of, parentinfo):
+    if of.gtk is not None:
+        return of.gtk
+    elif type(of) is ParamSequence:
+        of.gtk = ParamSequenceGtk(figure_gui_element(of.top,i, parent), parentinfo)
+    elif type(of) is ParamNumber:
+        of.gtk = ParamNumberGtk(of, parentinfo)
+    elif type(of) is ParamString:
+        of.gtk = ParamStringGtk(of,  parentinfo)
+    elif type(of) is ParamBasic:
+        if of.type is str:
+            of.gtk = ParamStringGtk(of, parentinfo)
+        elif of.type is int or of.type is number:
+            of.gtk = ParamNumberGtk(of, parentinfo)
+
+    i = parentinfo[0]
+    if len(i) >= 2:
+        parent.get(i[-2]).gtk_add(of.gtk)
+
+    return of.gtk
+
+def figure_gui_el_vbox(list, parentinfo, vbox=Gtk.VBox()):
+    i, parent = parentinfo
+    j = 0
+    for el in list:
+        got = figure_gui_el(el, (i + [j], parent))
+        if got is not None:
+            vbox.pack_end(got.gtk_el, True,True,0)
+        else:
+            print(got,el)
+        j += 1
+    return vbox

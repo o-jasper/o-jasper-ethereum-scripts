@@ -1,40 +1,16 @@
 
-from ParamSelect import ParamSelect
-from ParamKindsGtk import *
+from ParamSelect import ParamSelect, ParamSequence
+from ParamKindsGtk import figure_gui_el_vbox
 from gi.repository import Gtk
-
-def element_associate_gtk(of, i, parent):
-    if of.gtk is not None:
-        return of.gtk
-    elif type(of) is ParamList:
-        of.gtk = ParamListGtk(top=associate_gtk_element(of.top,i, parent),
-                              parentinfo=(i,parent))
-    elif type(of) is ParamNumber:
-        of.gtk = ParamNumberGtk(min=w.min, max=self, parentinfo=(i,parent))
-
-    if len(i) >= 2
-        parent.get(i[-2]).gtk_add(of.gtk)
-
-    return of.gtk
-
-def list_associate_gtk(list, vbox, i, parent):
-    j = 0
-    for el in list:
-        vbox.pack_end(element_associate_gtk(el, i + [j], parent))
-        j += 1
-    return vbox
 
 class ParamSelectGtk(ParamSelect):
 
-    collapse_seq = []  # Sequence that would collapse when undoing.
-    vbox = None
-
-    def __init__(self, list, values={} vbox=Gtk.VBox(False,0)):
+    def __init__(self, list, values={}, vbox=Gtk.VBox(False,0)):
         self.list    = list
         self.values  = values
+        self.at_i = [0]
 
-        self.vbox = list_associate_gtk(list, vbox)
-        return self.vbox
+        self.gtk_el = figure_gui_el_vbox(list, ([],self), vbox=vbox)
 
     def choose(self, value):
         before_i = self.at_i
@@ -53,7 +29,7 @@ class ParamSelectGtk(ParamSelect):
         el = self
         for i in self.at_i[-1:]:
             el = el.list[i]
-            assert type(el) is ParamList
+            assert type(el) is ParamSequence
             for j in range(len(el.list)):
                 el.show(i == j)  # Only show the one active.
         
