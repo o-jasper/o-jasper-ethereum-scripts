@@ -24,6 +24,8 @@ he gives his secret. This can be fixed by giving forfeitures at this point the
 (presumably they can get their transactions in a block by that time)
 
 # TODO
+* See if i can update this.
+* Consider a contract particularly for serving up random data.
 * At what point does miner collusion *actually* become a problem. I.e. if the
   damage is at an acceptable level, the simple method might be acceptable.
 * Keep a lookout for other ways of getting psuedorandom value.

@@ -1,3 +1,5 @@
+**Note**: pre-serpent.
+
 **Note** The 'rich server' attack is a problem.. For instance if content is
 considered 'wrong' someone rich might simply pretend to serve it and then use
 the punishment scheme. The cost on his side may just be part of the course.

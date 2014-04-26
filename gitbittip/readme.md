@@ -1,4 +1,7 @@
 
+**Note:** untested, and pre-Serpent code
+(maybe at some later point i will push it on)
+
 Idea inspired on [gittip](http://gittip.com/) due to Chad Whitacre.
 
 ## GitBitTip script on sender side
