@@ -4,19 +4,16 @@ effects warrant human intervention, require note in a log, or generally the
 
 The classifiers can be placed as such:
 
-<img src="tx-firewall.png">
+<img src="classifier.png">
 
 The input could be random data, and the whole thing 'mere' simulation for the
 purpose of testing. Everything could be a simulation so the user knows which
 classifiers where triggered.
 
-The input classifier(`I`), program(`P`) pair is already a test, of just `P`.
+The input classifier, program pair is already a test, of just the program.
 
-The `I`, output-classifier(`O`) tests the contract(`C`). Of course things may be
-incorrect output for `P`, but still be something that has to pass the test of
-`O`, however, the things `I` decides still affect `O`.
-
-`I` itself is potentially affected by `C`
+Output-classifier tests the contract, some of the statements tested here only
+tell something about the contract if the input didnt fail already.
 
 So how do we classify, in a way that is very clear? Firstly, the classifiers
 should have different levels of specificness, because if you go too specific,
@@ -29,6 +26,8 @@ should clarify the logic.
 The approach is to have statements that gather data into variables. Firstly,
 the transaction and contract information. Then in the second stage, 
 transactions information from the contract, and post-run contract info.
+The second stage is not allowed to change state, all calculations using
+state have to be done beforehand, this is to force clarity in the claims.
 
 This information is put together into boolean logic statements, each with a
 name, which classify, by the statements being true/false.
@@ -36,15 +35,44 @@ name, which classify, by the statements being true/false.
 Under each name, a new set of potential classifications are possible, and
 the process is repeated.
 
-## Example to illustrate: [escrow](https://github.com/jorisbontje/cll-sim/blob/master/examples/escrow.cll)
-Note that is pre-serpent code!
+## Escrow Example to illustrate: 
 
-#### Input firewall
+We take the [escrow](https://github.com/jorisbontje/cll-sim/blob/master/examples/escrow.cll)
+example from Joris Bontjes' [cll-sim](https://github.com/jorisbontje/cll-sim/blob/master/examples/escrow.cll)). This is pre-serpent, and cll-sim hasnt been updated
+to serpent. Yet, but the purpse here is to illustrate, not to provide
+a tutorial or example code.
+
+For good measure/convenience, here is the code of the contract:
+
+    if tx.value < 100 * block.basefee:
+        stop
+    
+    state = contract.storage[1000]
+    if state == 0 and tx.value >= PRICE:
+        contract.storage[1000] = 1
+        contract.storage[1001] = tx.sender
+        contract.storage[1002] = tx.value
+        contract.storage[1003] = block.timestamp
+    else if state == 1:
+        if tx.sender == VERIFIER:
+            mktx(MERCHANT, contract.storage[1002], 0, 0)
+            contract.storage[1000] = 2
+        else if block.timestamp > 30 * 86400 + contract.storage[1003]:
+            mktx(contract.storage[1001], contract.storage[1002], 0, 0)
+            contract.storage[1000] = 3
+
+The idea is that a sender pays to the contract, if the verifier confirms
+the service/good was provided by the merchant, he tells the contract to 
+pass it along to the merchant. If he doesnt verify, there is a timeout,
+after which anyone can trigger the contract to return the ethers to the
+payer.
+
+### Input classifier
 We will write down the test in code essentially. However, the intention for 
 execution is that `bug` and `note` infact just log the information, not
 terminating.
 
-    def input_firewall(tx, promise, contract):
+    def input_classifier(tx, promise, contract):
        
         fee = 100*block.basefee
         state = contract.storage[1000]
@@ -97,7 +125,10 @@ itself.
 It should not be seen as python code, but as pseudocode representing the
 below graph:
 
-**TODO GRAPH**
+**TODO GRAPH** (probably use `dot` to generate)
+
+So the code could really be general Ethereum code, but with a tree that uses
+the variables at the end, so the claims are clearer.
 
 Quite a few of the clauses could imply lost money if violated. The contract
 doesnt support getting more out than was intended to be paid. Essentially 
@@ -106,17 +137,25 @@ this means ether can only be stolen by messing up `tx.to_address`
 transactions coming from senders whoms' privkeys you do not have)
 
 `tx.to_address` is maybe one of the hardest to check, as the program can fake
-its promise aswel as the address the transaction sends too. I imagine ethereum
-could add a toplevel naming system, and `contract_name(address)` returns 
-the name. This can be checked with `promise.to_name` and the promised name 
-featured prominently in the GUI.(or whatever)
+its promise aswel as the address the transaction sends too, and you cannot tell
+the users intention. Some solutions:
+
+1. Use naming system like NameReg, and `contract_name(address)` returns the name.
+   This can be checked with `promise.to_name`. Prominently show the name.
+
+2. Maybe use some sort of promise on what the contract looks like.
+
+#### And classifier the output of the contract
+
+**TODO**
 
 
-#### 
+**TODO graph**
 
-## Fuzz testing note
+## Fuzz testing corner cases
 
 One thing about fuzz testing is that it can be hard to find realistic
-test cases, that find corner cases. It is in principle possible to take the
-states of instances of the contract on the blockchain, and transactions to them,
-and subject those to random variations and test with those cas
+test cases, that find corner cases.
+
+To improve this you can try tailor them. But here we have a potential 
+source of them in the form of what already goes on on (test)blockchains.

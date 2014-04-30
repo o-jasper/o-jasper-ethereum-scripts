@@ -1,8 +1,8 @@
 
-default: tx-firewall.png
+default: classifier.png post.html
 
 %.png: %.svg
 	convert -trim $< $@
 
-%.md: %.html
-	markdown $< > $@
+%.html: %.md
+	markdown $< >  $@
