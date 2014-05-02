@@ -10,10 +10,10 @@ The input could be random data, and the whole thing 'mere' simulation for the
 purpose of testing. Everything could be a simulation so the user knows which
 classifiers where triggered.
 
-The input classifier, program pair is already a test, of just the program.
+The send classifier, program pair is already a test, of just the program.
 
-Output-classifier tests the contract, some of the statements tested here only
-tell something about the contract if the input didnt fail already.
+Result the classifier tests the contract, some of the statements tested here
+only tell something about the contract if the input didnt fail already.
 
 So how do we classify, in a way that is very clear? Firstly, the classifiers
 should have different levels of specificness, because if you go too specific,
@@ -67,16 +67,16 @@ pass it along to the merchant. If he doesnt verify, there is a timeout,
 after which anyone can trigger the contract to return the ethers to the
 payer.
 
-### Input classifier
+### Send classifier
 We will write down the test in code essentially. However, the intention for 
 execution is that `bug` and `note` infact just log the information, not
 terminating.
 
-    def input_classifier(tx, promise, contract):
-       
+    send_vars:  # allowed to access (tx, promise, contract)
         fee = 100*block.basefee
-        state = contract.storage[1000]
+        pre_state = contract.storage[1000]
         
+    send_classify:
         if tx.value < fee:  # (Obsolete due to gas, of course!)
             bug("Not enough for fee")
             
@@ -90,7 +90,7 @@ terminating.
             bug("Name suddenly changed?!")
 
         if promise.what == PAYING:
-            if state != 1:
+            if pre_state != 1: 
                 bug("Contract not in buying stage")
             
             if contract.PRICE != promise.price:
@@ -105,16 +105,16 @@ terminating.
                 bug("Dont own that address")
 
         elif promise.what == VERIFYING:
-            if tx.sender == contract.VERIFIER:
+            if tx.sender != contract.VERIFIER:
                 bug("Only verifier can verify!")
                 if own(contract.VERIFIER):
-                    note("You do own the verifier address, but not being used")
+                    note("You do own the verifier address, you couldnt do this being used")
 
         elif promise.what == REFUND:  # Poking for refund.
-            if state != 1:
-                bug("It is not in the verifying/refund state!")
+            if pre_state != 1:
+                bug("It is not in the verifying/refund pre_state!")
 
-            if state == 1 and block.timestamp <= 30 * 86400 + contract.storage[1003]:
+            if pre_state == 1 and block.timestamp <= 30 * 86400 + contract.storage[1003]:
                 bug("Its too early for a refund")
 
 If you look at the code, note that you could follow any branch of logic
@@ -145,10 +145,14 @@ the users intention. Some solutions:
 
 2. Maybe use some sort of promise on what the contract looks like.
 
-#### And classifier the output of the contract
+#### Result classifier
 
-**TODO**
-
+    result_vars:
+        post_state = contract.storage[1000]
+        
+    result_classifier[0]:  # (contract, tx=tx[0], send)
+        if promise.post_state != post_state:
+            bug("Post state not as promised!")
 
 **TODO graph**
 
