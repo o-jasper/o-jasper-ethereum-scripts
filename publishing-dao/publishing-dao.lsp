@@ -39,15 +39,27 @@
              })
         (return @0x00)
         })
+    
+;;Can only remove DHT addresses if advertising period is over.
+    (if (< (timestamp) @@0x10)
+        (return)) 
+    
     (if (= [cmd] 1)  ;Overwriting adresses; index-address pairs.
         {
         (for [i] 1 (< @i (calldatasize)) [i] (+ @i 2)
              {
-             [[ @@(calldataload ) ]] (calldataload @i)
+             [[ (+ 0x20 @@(calldataload @i)) ]] (calldataload (+ @i 1))
              [[0x00]] (+ @0x00 1)
              })
         (return)
         })
     (if (= [cmd] 2) ;Removing everthing past this number of adresses.
-        )
+        {
+        [from] (calldataload 1)
+        (for [i] 2 (< @i (calldatasize)) [i] (+ @i 1)
+             {
+             [[ (+ @from @i) ]] (calldataload (+ 2 @i))
+             })
+        (return)
+        })             
 }
