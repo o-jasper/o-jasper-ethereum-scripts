@@ -1,3 +1,6 @@
+Note: i have doubts if this speaks to people nearly enough, might be better to
+present it with a 'mocked up DHT'.
+
 # DHTs: more than just storage
 
 <a href="https://en.wikipedia.org/wiki/Distributed_hash_table">Distributed Hash Table</a>
@@ -43,7 +46,7 @@ from everything else and who authored it may be possible.
 
 A company may claim its product is good, and put that up to some kind of judge,
 say that of the customers. The layout is forced again, so if the customers
-say NAY it aint true.
+say NAY, it aint true.
 
 In the context of Democracy-DAO, a government can literally be forced to make
 certain statements on their own public websites.
@@ -51,3 +54,8 @@ certain statements on their own public websites.
 Publishing DAO, again, could also force themselves to allow some other party
 to add criticism right on the page itself. This might be useful for parties
 seeking to be reputable sources.
+
+## Disadvantages
+
+The browser can change, and the page cannot be updated to match those changes.
+It would likely require LTS versions, or use of very stable features.
