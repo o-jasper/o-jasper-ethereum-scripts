@@ -2,12 +2,12 @@
 MCONV = replace '<code>' '<b>' '</code>' '</b>' '&amp;' '&'\
  '<blockquote>' '<blockquote><b>' '</blockquote>' '</b></blockquote>'
 
-default: *.html
+default: Stake.html InsuranceGamble.html
 
 Stake.html: Stake.md
 	markdown $< | $(MCONV) > $@
 
-Trust_estimate.html: Trust_estimate.md
+InsuranceGamble.html: InsuranceGamble.md
 	markdown $< | $(MCONV) > $@
 
 %.html: %.md
