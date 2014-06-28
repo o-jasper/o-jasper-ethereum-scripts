@@ -1,3 +1,4 @@
+**This directories are for old stuff.. Some of it will be removed, some rehabilitated.**
 
 # Ethereum scripts
 Currently just one CLL script, using
