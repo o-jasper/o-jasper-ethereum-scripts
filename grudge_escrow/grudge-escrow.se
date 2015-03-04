@@ -1,0 +1,91 @@
+// Possibly foolish grudge-based escrow.
+//
+// * Creation is offer by merchant. Cancelable. as long as not accepted.
+//    initial balance(endowment) is merchant stake.
+// * A customer accepting. It is totally open to customers.
+// * Release by customer.
+
+//TODO feel like adding a time estimation, just so i can add pictures of
+// grumpier guys if it doesnt get paid for too long.
+data Merchant
+data CustomerTotal
+data CustomerBack
+data Customer
+data NextTime
+// 1 seconds, basically, the next block.(probably want a bunch of blocks in reality.
+wait_time = 1
+
+def init():
+    self.Merchant = msg.sender  // Merchant
+
+def change_deal(price, customer_stake):
+    // If no customer yet, changes are allowed.
+    if msg.sender == self.Merchant && self.Customer == 0:
+        // TODO handle a merchant that might try get this transaction between sneakily.
+        // think you might want to automatically set a block that disables it for a couple
+        // of blocks.
+        self.CustomerTotal = price + customer_stake  // Set the price.
+        self.CustomerBack = customer_stake           // And customer holding side.
+        self.NextTime = block.timestamp
+        return("price changed")
+    return("no not allowed")
+
+def price():
+    return self.CustomerTotal - self.CustomerBack
+
+def customer_stake():
+    return self.CustomerBack
+
+def merchant_stake():
+    if self.Customer == 0:
+        return self.balance
+    else:
+        return self.balance - self.CustomerTotal
+
+def total():
+    return self.CustomerTotal
+
+def refund():  // Refund also sends the stake (of both sides) to the customer.
+    if msg.sender == self.Merchant:
+        send(self.Customer, self.balance)
+        self.CustomerTotal = 0  // Reset stuff.(can be reused)
+        self.CustomerBack = 0
+        self.Customer = 0
+        self.NextTime = 0
+        return("refunded")
+    return("no not allowed")
+
+def buy():
+    if self.CustomerTotal == 0: // No offer by merchant yet.
+        send(msg.gas - 100, msg.sender, msg.value)
+        return("no offer yet")
+
+    if self.Customer == 0:
+        // Not enough time passed.
+        if block.timestamp < self.NextTime + wait_time:
+            send(msg.gas - 100, msg.sender, msg.value)
+            return("too early")
+        
+        // Self.Customer coming in.
+        if msg.value < self.CustomerTotal:  // Not paying enough.
+            send(msg.sender, msg.value)
+            return("insufficient")
+        // Sufficient, give self.Customer releasing control.
+        self.Customer = msg.sender
+        // From this point, the time is just used to make angry faces.
+        self.NextTime = block.timestamp
+        return("bought")
+
+    return("already someone")  // Who are you? Thanks for the ethers.
+
+def release():
+    //Customer releasing funds both ways.
+    if msg.sender == self.Customer:
+        send(msg.sender, self.CustomerBack)
+        send(self.Merchant, self.balance)
+        self.CustomerTotal = 0  // Reset stuff.(can be reused)
+        self.CustomerBack = 0
+        self.Customer = 0
+        self.NextTime = 0
+        return("released")
+    return("stranger")  // Who are you? Thanks for the ethers.
