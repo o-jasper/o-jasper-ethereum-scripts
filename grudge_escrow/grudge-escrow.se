@@ -8,12 +8,12 @@
 //TODO feel like adding a time estimation, just so i can add pictures of
 // grumpier guys if it doesnt get paid for too long.
 data Merchant
-data CustomerTotal
+data CustomerTotal,
 data CustomerBack
 data Customer
 data NextTime
-// 1 seconds, basically, the next block.(probably want a bunch of blocks in reality.
-wait_time = 1
+// 2 minutes.
+wait_time = 120
 
 def init():
     self.Merchant = msg.sender  // Merchant
@@ -57,13 +57,13 @@ def refund():  // Refund also sends the stake (of both sides) to the customer.
 
 def buy():
     if self.CustomerTotal == 0: // No offer by merchant yet.
-        send(msg.gas - 100, msg.sender, msg.value)
+        send(msg.sender, msg.value)
         return("no offer yet")
 
     if self.Customer == 0:
         // Not enough time passed.
         if block.timestamp < self.NextTime + wait_time:
-            send(msg.gas - 100, msg.sender, msg.value)
+            send(msg.sender, msg.value)
             return("too early")
         
         // Self.Customer coming in.
