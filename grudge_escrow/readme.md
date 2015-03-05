@@ -1,4 +1,9 @@
 
+**Note** needs upgrading to PoC8..
+
+`grudge-escrow.se` itself and the `cases.py` tester have been upgraded,
+but not any of the browser interface!
+
 # Simpler contract for simpler testing..
 
 It is called grudging escrow because if the deal fails, the rational choice if

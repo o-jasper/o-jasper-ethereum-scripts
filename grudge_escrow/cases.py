@@ -30,17 +30,12 @@ def reset(a):
     c = s.abi_contract('grudge-escrow.se', t.k0, a)
 
 def check(a, ready=False, customer=False):
-    0
-#    assert s.block.get_balance(c) == a
-#    if not ready:
-#        assert s.block.get_storage_data(c, 0x20) == 0
-#        assert s.block.get_storage_data(c, 0x40) == 0
-#    if customer:
-#        assert hex(s.block.get_storage_data(c, 0x60))[2:-1] == customer
-#    else:
-#        assert s.block.get_storage_data(c, 0x60) == 0
-    # Check it isnt overwriting permanents
-#    assert hex(s.block.get_storage_data(c, 0x00))[2:-1] == t.a0
+    assert c.balance() == a
+
+    if ready:
+        assert c.price() == 2000
+        assert c.customer_stake() == 1000
+        assert c.total() == 3000
 
 def random_addr(disallow=None):
     if not disallow:
@@ -58,12 +53,11 @@ def scenario_insufficient(r=True, a=1000):
 
     assert c.buy(value=randrange(2343), sender=random_addr()) == i("no offer yet")
     
-    check(a if r else 0)
+    check(a if r else 0, False)
     assert c.change_deal(2000, 1000, value=(0 if r else a), sender=t.k0) == i("price changed")
-#    assert s.block.get_storage_data(c, 0x20) == 3000
-#    assert s.block.get_storage_data(c, 0x40) == 1000
-#    assert s.block.get_storage_data(c, 0x60) == 0
     assert c.buy(value=2500, sender=random_addr()) == i("too early")
+
+    assert int(c.open_after()) == int(s.block.timestamp)
 
     s.mine(100) #, random_addr())
     
@@ -72,21 +66,34 @@ def scenario_insufficient(r=True, a=1000):
     assert c.buy(value=2500, sender=random_addr()) == i("insufficient") 
     check(a, True)
 
-def scenario_sufficient(r=True, a=1000):
+def scenario_buy(r=True, a=1000):
     scenario_insufficient(r)
     check(a, True)
 
     assert c.buy(sender=t.k2, value=3000) == i("bought")
     check(a + 3000, True, t.a2)
 
-    assert c.release(sender=t.k4, value=3) == i("stranger")  # Guy meddling.
+    assert c.buy(sender=random_addr(t.k2), value=3000) == i("already buyer")
     check(a + 3000, True, t.a2)
 
+    assert c.refund(sender=random_addr(t.k0), value=randrange(2435)) == i("only merchant")
+    check(a + 3000, True, t.a2)
+
+    assert c.release(sender=t.k4, value=3) == i("only customer")  # Guy meddling.
+    check(a + 3003, True, t.a2)
+
+def scenario_released(r=True, a=1000):
+    scenario_buy(r, a)
     assert c.release(sender=t.k2) == i("released")
     check(0)
 
-scenario_sufficient()
-#assert s.send(t.k8, c, 0, [7000, 500])  # Meddling.
-# check(0)
+def scenario_refunded(r=True, a=1000):
+    scenario_buy(r, a)
+    assert c.refund(sender=t.k0) == i("refunded")
+    check(0)
 
-scenario_sufficient(False) # Tests reviving.
+scenario_released()
+
+scenario_released(False) # Tests reviving.
+
+scenario_refunded() # Tests reviving.
