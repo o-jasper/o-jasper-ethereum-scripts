@@ -10,6 +10,7 @@ data Min
 data Max
 data CurI
 data List[]
+data Funded
 
 def init():
     self.Creator = msg.sender
@@ -18,12 +19,15 @@ def init():
 //    self.Min = 20000  // Amount needed.
 //    self.Max = 30000  // Max amount we can deal with.
     self.CurI = 0
+    self.Funded = 0
 
 // Initialize
 def initialize(creator, recipient, endtime, min, max):
     if msg.sender == self.Creator:
         if self.Recipient != 0:
-            return("already initialized")    
+            return("already initialized")
+        if self.Funded:
+            return "Successfully funded"
         self.Creator   = creator
         self.Recipient = recipient
         self.EndTime = endtime
@@ -48,6 +52,9 @@ def max():
     return(self.Max)
 def cnt():
     return self.CurI/2
+
+def funded():
+    return self.Funded
 
 def fund_addr_i(index):
     if i < 1 || 2*(i - 1) > self.CurI:
@@ -83,14 +90,16 @@ def pay_i(index):
         send(msg.sender, msg.value)
         return("not ready")
 
-    if block.timestamp > self.EndTime: //Ran out of time. 
+    if self.Funded:
         send(msg.sender, msg.value)
-        return self.finish()
+        return("already funded")
 
-    if contract.balance > self.Max: //Over the maximum.
+    // Note: it is allowed to be late, if `finish` not yet called.
+
+    if self.balance > self.Max: //Over the maximum.
         send(msg.sender, msg.value)
         return("hit max")
-    
+
     // Funding is succeeding.
     i = 2*(index - 1)
     if i >= 0 && i < self.CurI && self.List[i] == msg.sender:
@@ -125,6 +134,7 @@ def finish():
     if block.timestamp > self.EndTime: //Ran out of time, judgement day.
         if self.balance > self.Min:
             send(self.Recipient, self.balance)
+            self.Funded = 1
             return "funded"
         self.refund()
         return "underfunded"

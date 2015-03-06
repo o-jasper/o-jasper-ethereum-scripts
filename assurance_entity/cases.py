@@ -39,7 +39,7 @@ def reset():
     c = s.abi_contract('assurance_ent.se', t.k0)
 
 
-def check(a, n):  # TODO this would be better with 'stateless call'
+def check(a, n):
     assert c.balance() == a
     assert c.cnt() == n
 
@@ -72,7 +72,8 @@ befores = None
 def scenario_init():
     global end_time, befores
     befores = {}
-    reset()
+    if s is None:
+        reset()
     end_time = s.block.timestamp  + 200
     check_blank()
     assert c.initialize(t.a0, t.a0, end_time, 20000, 30000) == i("initialized")
@@ -81,18 +82,21 @@ def scenario_init():
 def pay(k, a, must_be_paid):
     global befores
     sender = any_key()
-    addr = u.privtoaddr(sender)
+#    addr = u.privtoaddr(sender)
 #    befores[addr] = befores[addr] or s.block.balance(int("0x" + addr))
     
     got =  c.pay_i(k, sender=sender, value=a)
     if got == i("index paid"):
         assert hex(c.fund_addr_i(k))[2:-1] == sender
+        return False
     elif got == i("paid"):
-        return
+        return False
     assert must_be_paid
     if k > 2**64:
         assert got == i("unrealistic")
-    assert got == i("hit max") and c.balance() + ca > c.max()
+    else:
+        assert got == i("hit max") and c.balance() + a > c.max()
+    return True
 
 def scenario_dont_reach():
     scenario_init()
@@ -106,7 +110,8 @@ def scenario_dont_reach():
     return a, n
 
 def check_refund():
-    0
+    check_blank()
+# TODO ... yeah it is important to check the ethers arrive.
 #    for addr in t.accounts: #... they're paying for gas too.
 #        if addr != t.a0:
 #            assert s.block.balance(addr) == befores[addr]
@@ -117,21 +122,28 @@ def scenario_underfunded():
         s.mine()
     check(a, n)
     assert c.finish(sender=any_key()) == i("underfunded")
-    check_blank()
     check_refund()
 
-def scenario_funded():
+def scenario_funded(over=False):
     a,n = scenario_dont_reach()
-    while c.balance() < c.min(): # Go to threshhold.
+    m = 0
+    # Go to threshhold, or over if specified.
+    while c.balance() < c.min() or (over and m < 3):
         ca = randrange(5000)
-        pay(0, ca, False)
-        a += ca
-        n += 1
-        check(a,n)
+        if pay(0, ca, c.balance() >= c.min()):
+            m += 1
+        else:
+            a += ca
+            n += 1
+            check(a,n)
+
     while s.block.timestamp < end_time:  # Reach the time.
         s.mine()
     check(a, n)
     assert c.finish(sender=any_key()) == i("funded")
+    assert c.funded() == 1
+    assert c.balance() == 0
+    assert c.pay_i(0, sender=any_key(), value=randrange(25363)) == i("already funded")
     assert c.balance() == 0
 
 def scenario_refunded():
@@ -140,5 +152,8 @@ def scenario_refunded():
     check_refund()
 
 scenario_underfunded()
-scenario_funded()
+scenario_funded(True)
+
+s = None
 scenario_refunded()
+scenario_funded(True)
