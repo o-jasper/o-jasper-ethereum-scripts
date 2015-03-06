@@ -38,7 +38,6 @@ def reset():
     s = t.state()
     c = s.abi_contract('assurance_ent.se', t.k0)
 
-
 def check(a, n):
     assert c.balance() == a
     assert c.cnt() == n
@@ -82,8 +81,8 @@ def scenario_init():
 def pay(k, a, must_be_paid):
     global befores
     sender = any_key()
-#    addr = u.privtoaddr(sender)
-#    befores[addr] = befores[addr] or s.block.balance(int("0x" + addr))
+#    addr = int("0x" + u.privtoaddr(sender), 16) # hrmm keyerror?
+#    befores[addr] = befores[addr] or s.block.get_balance(addr)
     
     got =  c.pay_i(k, sender=sender, value=a)
     if got == i("index paid"):
