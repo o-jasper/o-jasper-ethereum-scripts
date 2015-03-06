@@ -33,8 +33,13 @@ def any_key(disallow=None):
 s = None
 c = None
 
+minv = 2*10**9
+maxv = 3*10**9
+duration = 200
+
 def reset():
     global c, s, end_time
+    print("creating")
     s = t.state()
     c = s.abi_contract('assurance_ent.se', t.k0)
 
@@ -46,8 +51,8 @@ def check(a, n):
     assert hex(c.creator())[2:-1] == t.a0
     assert hex(c.recipient())[2:-1] == t.a0
     assert c.endtime() == end_time
-    assert c.min() == 20000
-    assert c.max() == 30000
+    assert c.min() == minv
+    assert c.max() == maxv
 
     assert c.refund(sender=any_key(t.k0)) == i("only creator/self")
     assert c.initialize(t.a2, t.a2, s.block.timestamp  + 600, 24000, 30000) == \
@@ -62,27 +67,29 @@ def check_blank():
     assert c.cnt() == 0
     assert hex(c.creator())[2:-1] == t.a0
     assert c.pay_i(0, sender=t.k0, value=randrange(46364)) == i("not ready")
-    assert c.initialize(t.a2, t.a2, s.block.timestamp  + 600, 24000, 30000, \
-                        sender=any_key(t.k0)) == \
-        i("not creator")
+    assert c.initialize(t.a2, t.a2, s.block.timestamp  + 600, randrange(minv), maxv+3, \
+                        sender=any_key(t.k0)) == i("not creator")
 
 befores = None
 
 def scenario_init():
     global end_time, befores
-    befores = {}
     if s is None:
         reset()
-    end_time = s.block.timestamp  + 200
+        befores = {}
+    print("scenario: init")        
+    end_time = s.block.timestamp  + duration
     check_blank()
-    assert c.initialize(t.a0, t.a0, end_time, 20000, 30000) == i("initialized")
+    befores[t.a0] = s.block.get_balance(t.a0)
+    assert c.initialize(t.a0, t.a0, end_time, minv, maxv) == i("initialized")
     check(0, 0)
 
 def pay(k, a, must_be_paid):
     global befores
     sender = any_key()
-#    addr = int("0x" + u.privtoaddr(sender), 16) # hrmm keyerror?
-#    befores[addr] = befores[addr] or s.block.get_balance(addr)
+    addr = u.privtoaddr(sender) # hrmm keyerror?
+    if not addr in befores:
+         befores[addr] = s.block.get_balance(addr)
     
     got =  c.pay_i(k, sender=sender, value=a)
     if got == i("index paid"):
@@ -90,6 +97,7 @@ def pay(k, a, must_be_paid):
         return False
     elif got == i("paid"):
         return False
+    
     assert must_be_paid
     if k > 2**64:
         assert got == i("unrealistic")
@@ -99,10 +107,11 @@ def pay(k, a, must_be_paid):
 
 def scenario_dont_reach():
     scenario_init()
+    print("scenario: dont_reach")    
     check(0,0)
     n, a  = randrange(10), 0
     for j in range(n):  # Pay, but dont reach.
-        ca = randrange(19999/n)
+        ca = randrange((minv-1)/n)
         pay(0, ca, True)
         a += ca
         check(a, j + 1)
@@ -110,13 +119,13 @@ def scenario_dont_reach():
 
 def check_refund():
     check_blank()
-# TODO ... yeah it is important to check the ethers arrive.
-#    for addr in t.accounts: #... they're paying for gas too.
-#        if addr != t.a0:
-#            assert s.block.balance(addr) == befores[addr]
+    for addr in t.accounts: #... they're paying for gas too.
+        if addr != t.a0 and addr in befores:
+            assert abs(s.block.get_balance(addr) - befores[addr]) < 10**6
 
 def scenario_underfunded():
     a, n = scenario_dont_reach()
+    print("scenario: underfunded")    
     while s.block.timestamp < end_time:  # Reach the time.
         s.mine()
     check(a, n)
@@ -125,10 +134,11 @@ def scenario_underfunded():
 
 def scenario_funded(over=False):
     a,n = scenario_dont_reach()
+    print("scenario: funded")
     m = 0
     # Go to threshhold, or over if specified.
     while c.balance() < c.min() or (over and m < 3):
-        ca = randrange(5000)
+        ca = randrange(maxv/10)
         if pay(0, ca, c.balance() >= c.min()):
             m += 1
         else:
@@ -139,20 +149,24 @@ def scenario_funded(over=False):
     while s.block.timestamp < end_time:  # Reach the time.
         s.mine()
     check(a, n)
+    # Check funded stuff.
     assert c.finish(sender=any_key()) == i("funded")
     assert c.funded() == 1
     assert c.balance() == 0
     assert c.pay_i(0, sender=any_key(), value=randrange(25363)) == i("already funded")
     assert c.balance() == 0
+    # TODO .. balance of recipient.
 
 def scenario_refunded():
     a, n = scenario_dont_reach()
+    print("scenario: refunded")
     assert c.refund(sender=t.k0) == i("manual refund")
     check_refund()
 
+s = None
 scenario_underfunded()
 scenario_funded(True)
-
+print('---')
 s = None
 scenario_refunded()
 scenario_funded(True)
