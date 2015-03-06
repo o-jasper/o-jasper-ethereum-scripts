@@ -3,6 +3,8 @@ from random import randrange
 u = pyethereum.utils
 t = pyethereum.tester
 
+from pyethereum.blocks import BLOCK_REWARD
+
 def i(str):
     s,f = 0, 1
     for j in range(len(str)):
@@ -72,12 +74,14 @@ def check_blank():
                         sender=any_key(t.k0)) == i("not creator")
 
 befores = None
+block_n = None
 
 def scenario_init():
-    global end_time, befores
+    global end_time, befores, block_n
     if c is None:
         reset()
     befores = {}
+    block_n = s.block.number
     for addr in t.accounts:
         befores[addr] = s.block.get_balance(addr)
     print("scenario: init")        
@@ -109,6 +113,7 @@ def scenario_dont_reach():
     scenario_init()
     print("scenario: dont_reach")    
     check(0,0)
+    # TODO check how much everyone paid. Randomly (not) use the index.
     n, a  = randrange(10), 0
     for j in range(n):  # Pay, but dont reach.
         ca = randrange((minv-1)/n)
@@ -157,10 +162,11 @@ def scenario_funded(over=False):
     assert c.pay_i(0, sender=any_key(), value=randrange(25363)) == i("already funded")
     assert c.balance() == 0
 
-    #sa = 0
-    #for addr in t.accounts:
-    #    sa += (befores[addr] - s.block.get_balance(addr))
+    sa = 0
+    for addr in t.accounts:
+        sa += (befores[addr] - s.block.get_balance(addr))
     # TODO sum of this should be gas cost plus mining income.
+    assert sa - BLOCK_REWARD*(s.block.number - block_n) < 10**7
 
 def scenario_refunded():
     a, n = scenario_dont_reach()
@@ -169,7 +175,7 @@ def scenario_refunded():
     check_refund()
 
 c = None
-#scenario_underfunded()
+scenario_underfunded()
 scenario_funded(True)
 print('---') # Gotta have a new one, because old one kept in place if success.
 c = None
