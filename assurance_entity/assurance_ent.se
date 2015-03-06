@@ -1,0 +1,132 @@
+// Pays out if funds are reached, otherwise refunds.
+// 'kickstarter'/indiegogo like.
+
+// NOTE: would be nice to suicide the contract with return value and message sending?
+// Or reset.
+data Creator   // Owner of the contract. (TODO rename?)
+data Recipient // Who receives the proceeds
+data EndTime   // Time after which the crowdfund ends.
+data Min
+data Max
+data CurI
+data List[]
+
+def init():
+    self.Creator = msg.sender
+//    self.Recipient = msg.sender //Recipient of true result.
+//    self.EndTime = 10     // End time.
+//    self.Min = 20000  // Amount needed.
+//    self.Max = 30000  // Max amount we can deal with.
+    self.CurI = 0
+
+// Initialize
+def initialize(creator, recipient, endtime, min, max):
+    if msg.sender == self.Creator:
+        if self.Recipient != 0:
+            return("already initialized")    
+        self.Creator   = creator
+        self.Recipient = recipient
+        self.EndTime = endtime
+        self.Min = min
+        self.Max = max
+        return("initialized")
+    return("not creator")
+
+def recipient():
+    return self.Recipient
+def creator():
+    return self.Creator
+
+def balance():
+    return(self.balance)
+
+def endtime():
+    return(self.EndTime)
+def min():
+    return(self.Min)
+def max():
+    return(self.Max)
+def cnt():
+    return self.CurI/2
+
+def fund_addr_i(index):
+    if i < 1 || 2*(i - 1) > self.CurI:
+        return 0
+    return(self.List[2*(index - 1)])
+
+def fund_amount_i(index):
+    if i < 1 or i > self.CurI:
+        return 0
+    return(self.List[2*(index - 1) + 1])
+
+def index_of(funder):
+    i = 0
+    while i < self.CurI:
+        if self.List[i] == funder:
+            return i/2 + 1
+        i = i + 2
+    return 0
+
+def fund_amount_a(by_addr):
+    i = 0
+    while i < self.CurI:
+        if self.List[i] == funder:
+            return self.List[i + 1]
+        i = i + 2
+    return 0
+
+def pay_i(index):
+    if index > 2^64:
+        return "unrealistic"
+
+    if self.Recipient == 0:
+        send(msg.sender, msg.value)
+        return("not ready")
+
+    if block.timestamp > self.EndTime: //Ran out of time. 
+        send(msg.sender, msg.value)
+        return self.finish()
+
+    if contract.balance > self.Max: //Over the maximum.
+        send(msg.sender, msg.value)
+        return("hit max")
+    
+    // Funding is succeeding.
+    i = 2*(index - 1)
+    if i >= 0 && i < self.CurI && self.List[i] == msg.sender:
+        self.List[i + 1] = self.List[i + 1] + msg.value
+        return("index paid")
+
+    i = self.CurI
+    self.List[i]     = msg.sender
+    self.List[i + 1] = msg.value
+    self.CurI = i + 2
+    return("paid")
+
+def refund():
+    if msg.sender == self.Creator || msg.sender == self:
+        i = 0
+        t = self.CurI
+        while i < t:  // Send back and zero.
+            send(self.List[i], self.List[i + 1])
+            self.List[i] = 0
+            self.List[i+1] = 0
+            i = i + 2
+        self.Recipient = 0  // Reset.
+        self.EndTime = 0
+        self.Min = 0
+        self.Max = 0
+        self.CurI = 0
+        return "manual refund"
+    return "only creator/self"
+
+// Refund/fund based on state.
+def finish():
+    if block.timestamp > self.EndTime: //Ran out of time, judgement day.
+        if self.balance > self.Min:
+            send(self.Recipient, self.balance)
+            return "funded"
+        self.refund()
+        return "underfunded"
+    // https://www.jamendo.com/en/track/485405/we-ain-t-finished-yet
+    return "we aint finished yet"
