@@ -33,14 +33,15 @@ def any_key(disallow=None):
 s = None
 c = None
 
-minv = 2*10**9
-maxv = 3*10**9
+minv = 2*10**12
+maxv = 3*10**12
 duration = 200
 
 def reset():
     global c, s, end_time
     print("creating")
-    s = t.state()
+    if s is None:
+        s = t.state()
     c = s.abi_contract('assurance_ent.se', t.k0)
 
 def check(a, n):
@@ -74,9 +75,11 @@ befores = None
 
 def scenario_init():
     global end_time, befores
-    if s is None:
+    if c is None:
         reset()
-        befores = {}
+    befores = {}
+    for addr in t.accounts:
+        befores[addr] = s.block.get_balance(addr)
     print("scenario: init")        
     end_time = s.block.timestamp  + duration
     check_blank()
@@ -87,10 +90,7 @@ def scenario_init():
 def pay(k, a, must_be_paid):
     global befores
     sender = any_key()
-    addr = u.privtoaddr(sender) # hrmm keyerror?
-    if not addr in befores:
-         befores[addr] = s.block.get_balance(addr)
-    
+
     got =  c.pay_i(k, sender=sender, value=a)
     if got == i("index paid"):
         assert hex(c.fund_addr_i(k))[2:-1] == sender
@@ -119,9 +119,10 @@ def scenario_dont_reach():
 
 def check_refund():
     check_blank()
-    for addr in t.accounts: #... they're paying for gas too.
-        if addr != t.a0 and addr in befores:
+    for addr in t.accounts: #... they're paying for gas too. Better if accounted for.
+        if addr != t.a0:
             assert abs(s.block.get_balance(addr) - befores[addr]) < 10**6
+    assert abs(s.block.get_balance(t.a0) - befores[t.a0]) < 10**6
 
 def scenario_underfunded():
     a, n = scenario_dont_reach()
@@ -155,7 +156,11 @@ def scenario_funded(over=False):
     assert c.balance() == 0
     assert c.pay_i(0, sender=any_key(), value=randrange(25363)) == i("already funded")
     assert c.balance() == 0
-    # TODO .. balance of recipient.
+
+    #sa = 0
+    #for addr in t.accounts:
+    #    sa += (befores[addr] - s.block.get_balance(addr))
+    # TODO sum of this should be gas cost plus mining income.
 
 def scenario_refunded():
     a, n = scenario_dont_reach()
@@ -163,10 +168,10 @@ def scenario_refunded():
     assert c.refund(sender=t.k0) == i("manual refund")
     check_refund()
 
-s = None
-scenario_underfunded()
+c = None
+#scenario_underfunded()
 scenario_funded(True)
-print('---')
-s = None
+print('---') # Gotta have a new one, because old one kept in place if success.
+c = None
 scenario_refunded()
 scenario_funded(True)
