@@ -7,5 +7,5 @@ import argparse
 
 #parser = argparse.ArgumentParser(description="Models the thing.")
 
-field = flow_timestep(100)
+field = flow_timestep({(10,0):{}}, 50)
 plot(field)
