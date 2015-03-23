@@ -4,21 +4,23 @@ data implementer
 data boardadd
 
 data member_cnt
-data member_i
-data member_max_i
+data member_i      // So we know where to add.
+data member_max_i  // So we know where to search.
 data members[]
 
 data proposal_cnt
 data proposal[](info, body[], votes[])
 
-HALFWAY = 
+P16 = 65536
+P64 = 18446744073709551616
+
 ADDR_PART = 1461501637330902918203684832716283019655932542976
 
 def init():
      self.changer = msg.sender
      self.boardadd = msg.sender
 
-def changer_changer(data:arr):
+def changer_change(data:arr):
      if msg.sender == self.changer:
          self.changer = data[0]
          self.implementer = data[1]
@@ -30,24 +32,32 @@ def changer_changer(data:arr):
 // Can "neutralize" the votes there, however.
 def boardadd_add_member(addr):
     if msg.sender == self.boardadd:
-        i = self.member_i
-        while self.member[i] != 0:
-            i += 1
-        self.member[i] = addr
-        self.member_i = i + 1
-        if i > self.member_max_i:
-            self.member_max_i = i
-        self.member_cnt += 1
+        i = self.member_i_of(addr%ADDR_PART)
+        if i == P64:
+            i = self.member_i
+            while self.members[i] != 0:  // Search for unoccupied spot.
+                i += 1
+            self.members[i] = addr
+            self.member_i = i + 1
+            if i > self.member_max_i:  // Note how far to search.
+                self.member_max_i = i
+            self.member_cnt += 1
+        else:  // If already exsits, use that
+            self.members[i] = addr
 
 def boardadd_remove_member(addr):
-    if msg.sender == self.boardadd:  // Just nukes it.
+    if msg.sender == self.boardadd:  // Zeros out that member.
         i = 0
-        while i < member_i:
-            if self.member[i] % ADDR_PART == addr:
+        while i < member_i: // Find it.
+            if self.members[i] % ADDR_PART == addr:
                 if i < self.member_i:
                     self.member_i = i
-                self.member[i] = 0
-                self.member_removed_cnt += 1
+                self.members[i] = 0
+                self.member_cnt -= 1
+                if self.member_max_i == i:  // Can lower search maximum.
+                    while self.members[i] == 0:
+                        i -= 1
+                    self.member_max_i = i
                 return
             i += 1
 
@@ -75,23 +85,32 @@ def add_proposal(body:arr):
     while i < len(body):
         self.proposal[self.proposal_cnt].body[i] = body[i]
         i += 1
+    self.proposal[self.proposal_cnt].info = len(body)
     self.proposal_cnt += 1
 
-def vote_for_i(member_i, proposal_2i):
-    if proposal_2i/2 < self.proposal_cnt:
+// stuffing information in `proposal_4i`:
+// First bit:  For/Against.
+// Second bit: Set to true/false.
+def vote_i(member_i, proposal):
+    if proposal/4 < self.proposal_cnt:
         // Vote if not already voted.
         if msg.sender == self.members[member_i]%ADDR_PART | msg.sender == self:
-            got = self.proposal[proposal_2i/2].votes[member_i/128]
-            k   = proposal_2i%2 + 2*(member_i%128)
-            if (got & 2^k) == 0:
-                self.proposal[proposal_2i/2].votes[member_i/128] = got | 2^k
-                self.proposal[proposal_2i/2].info += !(proposal_2i%2) + (proposal_2i%2)*HALFWAY
+            got = self.proposal[proposal/4].votes[member_i/128]
+            k = member_i%128 + proposal%2
+            if proposal%4 / 2:  // To true
+                if got & (2^k) == 0:  // Not already true.
+                    self.proposal[proposal_i/2].votes[member_i/128] = got | 2^k
+                    self.proposal[proposal_i/2].info += P16*(proposal%2 + (!(proposal%2))*P64)
+            else: // To false
+                if got & (2^k):  // Not already false.
+                    self.proposal[proposal_i/2].votes[member_i/128] = got & ~(2^k)
+                    self.proposal[proposal_i/2].info -= P16*((proposal%2 + (!(proposal%2))*P64))
 
-def vote_for(proposal_2i):
+def vote(proposal):
     member_i = 0
     while member_i < self.member_max_i:
-        if msg.sender == self.members[member_i]%ADDR_PART:
-            self.vote_for(member_i, proposal_2i)
+        if addr == self.members[member_i]%ADDR_PART:
+            self.vote_i(member_i, proposal)
         member_i += 1
 
 // Get information out.
@@ -114,6 +133,14 @@ def member_cnt():
 def member(i):
     return self.members[i]
 
+def member_i_of(addr):
+    member_i = 0
+    while member_i < self.member_max_i:
+        if addr == self.members[member_i]%ADDR_PART:
+            return member_i
+        member_i += 1
+    return P64
+
 def member_addr(i):
     return self.members[i]%ADDR_PART
 
@@ -123,6 +150,15 @@ def proposal_cnt():
 def proposal_info(i):
     return self.proposal[i].info
 
-//def proposal_body(i)
+def proposal_body_len(i):
+    return(self.proposal[i].info % P16)
+
+def proposal_for(i):
+    return((self.proposal[i].info / P16) % P64)
+
+def proposal_against(i):
+    return self.proposal[i].info / (P16*P64)
+
+
 // TODO
 //dewf proposal_votes(i,j)
